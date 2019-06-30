@@ -4,7 +4,10 @@ import jakojaannos.townbuilder.inventory.container.TownBuilderContainer;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
+@OnlyIn(Dist.CLIENT)
 public class TownBuilderScreen extends ContainerScreen<TownBuilderContainer> {
     public TownBuilderScreen(
         TownBuilderContainer container,
