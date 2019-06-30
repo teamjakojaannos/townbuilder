@@ -6,8 +6,5 @@
     },
     "model": "cube_all",
     "uvlock": true
-  },
-  "variants": {
-    "normal": [{}]
   }
 }
