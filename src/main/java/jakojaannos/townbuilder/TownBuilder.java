@@ -1,5 +1,6 @@
 package jakojaannos.townbuilder;
 
+import jakojaannos.townbuilder.init.InitContainerTypes;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -49,6 +50,7 @@ public class TownBuilder
     private void doClientStuff(final FMLClientSetupEvent event) {
         // do something that can only be done on the client
         LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
+        InitContainerTypes.registerScreenFactories();
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event)

@@ -24,12 +24,6 @@ class InitBlocks {
         create("town_builder", new TownBuilderBlock(Block.Properties.create(Material.ROCK)))
     );
 
-    @SubscribeEvent
-    public static void onBlocksRegistry(final RegistryEvent.Register<Block> event) {
-        LOGGER.debug("Registering Blocks");
-        blocks.forEach(tuple -> event.getRegistry().register(tuple.getA()));
-    }
-
     private static Tuple<Block, BlockItem> create(String key, Block block) {
         return create(key, block, b -> (BlockItem) new BlockItem(b, new Item.Properties().group(ItemGroup.MISC)).setRegistryName(b.getRegistryName()));
     }
@@ -41,6 +35,12 @@ class InitBlocks {
     ) {
         block.setRegistryName(TownBuilder.MOD_ID, key);
         return new Tuple<>(block, blockItemFactory.apply(block));
+    }
+
+    @SubscribeEvent
+    public static void onBlocksRegistry(final RegistryEvent.Register<Block> event) {
+        LOGGER.debug("Registering Blocks");
+        blocks.forEach(tuple -> event.getRegistry().register(tuple.getA()));
     }
 
     @SubscribeEvent
