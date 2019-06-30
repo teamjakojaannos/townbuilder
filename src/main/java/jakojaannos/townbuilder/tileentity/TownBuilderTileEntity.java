@@ -1,8 +1,13 @@
 package jakojaannos.townbuilder.tileentity;
 
+import jakojaannos.townbuilder.Network;
+import jakojaannos.townbuilder.entity.TownBuilderCameraEntity;
 import jakojaannos.townbuilder.inventory.container.TownBuilderContainer;
+import jakojaannos.townbuilder.network.CreateTownBuilderCameraMessage;
+import lombok.val;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.text.ITextComponent;
@@ -22,7 +27,19 @@ public class TownBuilderTileEntity extends TileEntity implements INamedContainer
         PlayerInventory playerInventory,
         PlayerEntity playerEntity
     ) {
-        return new TownBuilderContainer(transactionId, playerInventory);
+        val world = playerEntity.world;
+        if (!world.isRemote) {
+            throw new IllegalStateException("TownBuilderTE#createMenu(...) called on remote world!");
+        }
+
+        val x = pos.getX() + 0.5;
+        val y = pos.getY() + 0.5 + 5.0;
+        val z = pos.getZ() + 0.5;
+        val cameraEntity = new TownBuilderCameraEntity(world, x, y, z);
+        world.addEntity(cameraEntity);
+        Network.getServer().sendTo((ServerPlayerEntity) playerEntity, new CreateTownBuilderCameraMessage(cameraEntity));
+
+        return new TownBuilderContainer(transactionId, playerInventory, cameraEntity);
     }
 
     @Override

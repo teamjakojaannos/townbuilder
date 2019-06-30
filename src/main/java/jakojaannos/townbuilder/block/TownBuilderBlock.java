@@ -34,7 +34,6 @@ public class TownBuilderBlock extends Block {
             TileEntity tileEntity = world.getTileEntity(blockPos);
             if (tileEntity instanceof TownBuilderTileEntity) {
                 player.openContainer((TownBuilderTileEntity) tileEntity);
-                player.addStat(Stats.OPEN_BARREL);
             }
 
             return true;
