@@ -8,6 +8,11 @@
     "uvlock": true
   },
   "variants": {
-    "normal": [{}]
+    "": {
+      "textures": {
+        "all": "blocks/dirt"
+      },
+      "model": "cube_all"
+    }
   }
 }
