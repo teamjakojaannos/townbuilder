@@ -12,16 +12,16 @@ public class TownBuilderContainer extends Container {
     @Nullable private TownBuilderCameraEntity cameraEntity;
 
     public TownBuilderContainer(
-        int transactionId,
-        PlayerInventory playerInventory
+            int transactionId,
+            PlayerInventory playerInventory
     ) {
         this(transactionId, playerInventory, null);
     }
 
     public TownBuilderContainer(
-        int transactionId,
-        PlayerInventory playerInventory,
-        @Nullable TownBuilderCameraEntity cameraEntity
+            int transactionId,
+            PlayerInventory playerInventory,
+            @Nullable TownBuilderCameraEntity cameraEntity
     ) {
         super(ModContainerTypes.TOWN_BUILDER, transactionId);
         this.playerInventory = playerInventory;
@@ -34,7 +34,11 @@ public class TownBuilderContainer extends Container {
     }
 
     @Override
-    public void onContainerClosed(PlayerEntity p_75134_1_) {
-        super.onContainerClosed(p_75134_1_);
+    public void onContainerClosed(PlayerEntity playerEntity) {
+        super.onContainerClosed(playerEntity);
+        if (cameraEntity != null) {
+            cameraEntity.remove();
+            cameraEntity = null;
+        }
     }
 }

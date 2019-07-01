@@ -20,7 +20,8 @@ class InitEntityTypes {
 
         event.getRegistry()
              .register(create("town_builder_camera",
-                              EntityType.Builder.create(TownBuilderCameraEntity::new, EntityClassification.MISC)
+                              EntityType.Builder.create(EntityClassification.MISC)
+                                                .setCustomClientFactory((spawnEntity, world) -> new TownBuilderCameraEntity(world))
                                                 .immuneToFire()
                                                 .size(0.1f, 0.1f)));
     }

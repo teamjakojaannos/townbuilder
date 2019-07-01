@@ -1,10 +1,9 @@
 package jakojaannos.townbuilder.network;
 
+import jakojaannos.townbuilder.client.gui.screen.inventory.TownBuilderScreen;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.log4j.Log4j2;
-import lombok.val;
-import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -20,10 +19,7 @@ public class CreateTownBuilderCameraMessage {
             Supplier<NetworkEvent.Context> context
     ) {
         context.get().enqueueWork(() -> {
-            val player = Minecraft.getInstance().player;
-            LOGGER.warn("CALLED! ============================================================");
-            LOGGER.warn("local player: {}", player.getGameProfile().getName());
-            LOGGER.warn("received entityId: {}", message.entityId);
+            TownBuilderScreen.receiveCameraEntityId(message.getEntityId());
         });
         context.get().setPacketHandled(true);
     }

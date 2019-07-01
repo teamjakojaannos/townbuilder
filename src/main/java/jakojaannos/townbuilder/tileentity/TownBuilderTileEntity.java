@@ -16,6 +16,8 @@ import net.minecraft.util.text.TranslationTextComponent;
 import javax.annotation.Nullable;
 
 public class TownBuilderTileEntity extends TileEntity implements INamedContainerProvider {
+    private static final double CAMERA_HEIGHT = 25.0;
+
     public TownBuilderTileEntity() {
         super(ModTileEntityTypes.TOWN_BUILDER);
     }
@@ -33,9 +35,9 @@ public class TownBuilderTileEntity extends TileEntity implements INamedContainer
         }
 
         val x = pos.getX() + 0.5;
-        val y = pos.getY() + 0.5 + 5.0;
+        val y = pos.getY() + 0.5 + CAMERA_HEIGHT;
         val z = pos.getZ() + 0.5;
-        val cameraEntity = new TownBuilderCameraEntity(world, x, y, z);
+        val cameraEntity = new TownBuilderCameraEntity(world, x, y, z, 90.0f, 0.0f);
         world.addEntity(cameraEntity);
         Network.getServer().sendTo((ServerPlayerEntity) playerEntity,
                                    CreateTownBuilderCameraMessage.builder()
