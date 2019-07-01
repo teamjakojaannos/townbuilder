@@ -1,5 +1,6 @@
 package jakojaannos.townbuilder;
 
+import jakojaannos.townbuilder.init.InitContainerTypes;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -44,11 +45,12 @@ public class TownBuilder
         // some preinit code
         LOGGER.info("HELLO FROM PREINIT");
         LOGGER.info("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName());
+        Network.registerMessages(Network::createServerHandler);
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {
-        // do something that can only be done on the client
-        LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
+        Network.registerMessages(Network::createClientHandler);
+        InitContainerTypes.registerScreenFactories();
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event)
@@ -67,8 +69,8 @@ public class TownBuilder
     // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
-        // do something when the server starts
         LOGGER.info("HELLO from server starting");
+
     }
 
     // You can use EventBusSubscriber to automatically subscribe events on the contained class (this is subscribing to the MOD

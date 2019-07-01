@@ -21,8 +21,7 @@ class InitTileEntityTypes {
             LOGGER.warn("Blocks are not registered yet! Valid blocks won't be populated correctly!");
         }
 
-        LOGGER.debug("Registering TileEntityTypes");
-        event.getRegistry().register(create("townbuilder", TileEntityType.Builder.create(TownBuilderTileEntity::new/*, ModBlocks.TOWN_BUILDER*/)));
+        event.getRegistry().register(create("town_builder", TileEntityType.Builder.create(TownBuilderTileEntity::new, ModBlocks.TOWN_BUILDER)));
     }
 
     private static <T extends TileEntity> TileEntityType<T> create(String key, TileEntityType.Builder<T> builder) {
