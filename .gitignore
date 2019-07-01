@@ -24,3 +24,6 @@ run-server
 
 # Files from Forge MDK
 forge*changelog.txt
+
+!.idea/codeStyles/codeStyleConfig.xml
+!.idea/codeStyles/Project.xml
