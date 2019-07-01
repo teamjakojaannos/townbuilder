@@ -1,36 +1,30 @@
 package jakojaannos.townbuilder.network;
 
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.log4j.Log4j2;
 import lombok.val;
-import net.minecraft.entity.Entity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
+@Value
+@Log4j2
+@Builder(builderClassName = "Builder")
 public class CreateTownBuilderCameraMessage {
-    private final int entityId;
-
-    public CreateTownBuilderCameraMessage(Entity cameraEntity) {
-        this.entityId = cameraEntity.getEntityId();
-    }
-
-    public static void encode(CreateTownBuilderCameraMessage message, PacketBuffer packetBuffer) {
-
-    }
-
-    public static CreateTownBuilderCameraMessage decode(PacketBuffer packetBuffer) {
-
-        return null;
-    }
+    int entityId;
 
     public static void handle(
-        CreateTownBuilderCameraMessage message,
-        Supplier<NetworkEvent.Context> contextSupplier
+            CreateTownBuilderCameraMessage message,
+            Supplier<NetworkEvent.Context> context
     ) {
-        val ctx = contextSupplier.get();
-        ctx.enqueueWork(() -> {
-
+        context.get().enqueueWork(() -> {
+            val player = Minecraft.getInstance().player;
+            LOGGER.warn("CALLED! ============================================================");
+            LOGGER.warn("local player: {}", player.getGameProfile().getName());
+            LOGGER.warn("received entityId: {}", message.entityId);
         });
-        ctx.setPacketHandled(true);
+        context.get().setPacketHandled(true);
     }
 }

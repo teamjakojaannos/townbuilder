@@ -1,20 +1,16 @@
 package jakojaannos.townbuilder;
 
 import jakojaannos.townbuilder.network.CreateTownBuilderCameraMessage;
-import lombok.RequiredArgsConstructor;
-import net.minecraft.network.PacketBuffer;
+import jakojaannos.townbuilder.network.MessageAdapter;
+import jakojaannos.townbuilder.network.MessageField;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Utility class for handling communication between client and the server.
@@ -22,75 +18,36 @@ import java.util.function.Supplier;
 public class Network {
     private static final String PROTOCOL_VERSION = "1";
     private static final SimpleChannel CHANNEL_INSTANCE = NetworkRegistry.newSimpleChannel(
-        new ResourceLocation(TownBuilder.MOD_ID, "main"),
-        () -> PROTOCOL_VERSION,
-        PROTOCOL_VERSION::equals,
-        PROTOCOL_VERSION::equals
+            new ResourceLocation(TownBuilder.MOD_ID, "main"),
+            () -> PROTOCOL_VERSION,
+            PROTOCOL_VERSION::equals,
+            PROTOCOL_VERSION::equals
     );
-    private static Map<Class, MessageEntry> entries = new HashMap<>();
-
-    private static void createMessages() {
-        addEntry(CreateTownBuilderCameraMessage.class,
-                 CreateTownBuilderCameraMessage::encode,
-                 CreateTownBuilderCameraMessage::decode);
-    }
+    private static List<MessageAdapter<?, ?>> adapters = new ArrayList<>();
+    private static int discriminator;
 
     public static ModServerNetworkManager getServer() {
         return ModServerNetworkManager.getInstance(CHANNEL_INSTANCE);
     }
 
-    // TODO: Move these to client/server managers
-    // TODO: This does not work. Make wrapper handler which points to a MessageHandler instance, which contains
-    //       the actual handler mapping
-    public static MessageHandler createServerHandler() {
-        return () -> {
+    static void registerMessages() {
+        register(new MessageAdapter<>(CreateTownBuilderCameraMessage::builder, CreateTownBuilderCameraMessage.Builder::build)
+                         .withField(MessageField.ofInteger(CreateTownBuilderCameraMessage::getEntityId,
+                                                           CreateTownBuilderCameraMessage.Builder::entityId))
+                         .withClientsideHandler(CreateTownBuilderCameraMessage::handle));
+    }
 
-        };
+    static void activateServerHandlers() {
+        adapters.forEach(MessageAdapter::setServerside);
     }
 
     @OnlyIn(Dist.CLIENT)
-    public static MessageHandler createClientHandler() {
-        return () -> {
-            setHandler(CreateTownBuilderCameraMessage.class, CreateTownBuilderCameraMessage::handle);
-        };
+    static void activateClientHandlers() {
+        adapters.forEach(MessageAdapter::setClientside);
     }
 
-    private static <TMessage> void setHandler(
-        Class<? extends TMessage> messageClass,
-        BiConsumer<TMessage, Supplier<NetworkEvent.Context>> handler
-    ) {
-
-    }
-
-    public static void registerMessages(MessageHandler handler) {
-        createMessages();
-        handler.apply();
-
-        // noinspection unchecked
-        entries.forEach((key, value) -> CHANNEL_INSTANCE.registerMessage(value.discriminator,
-                                                                         key,
-                                                                         value.encoder,
-                                                                         value.decoder,
-                                                                         value.messageConsumer));
-    }
-
-    private static <TMessage> void addEntry(
-        Class<TMessage> messageClass,
-        BiConsumer<TMessage, PacketBuffer> encoder,
-        Function<PacketBuffer, TMessage> decoder
-    ) {
-        entries.put(messageClass, new MessageEntry<>(entries.size(), encoder, decoder));
-    }
-
-    @RequiredArgsConstructor
-    public static class MessageEntry<TMessage> {
-        private final int discriminator;
-        private final BiConsumer<TMessage, PacketBuffer> encoder;
-        private final Function<PacketBuffer, TMessage> decoder;
-        private BiConsumer<TMessage, Supplier<NetworkEvent.Context>> messageConsumer = (a, b) -> {};
-    }
-
-    public interface MessageHandler {
-        void apply();
+    private static <TMessage, TBuilder> void register(MessageAdapter<TMessage, TBuilder> messageAdapter) {
+        messageAdapter.register(discriminator++, CHANNEL_INSTANCE);
+        adapters.add(messageAdapter);
     }
 }

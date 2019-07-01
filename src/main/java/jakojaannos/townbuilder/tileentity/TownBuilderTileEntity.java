@@ -23,12 +23,12 @@ public class TownBuilderTileEntity extends TileEntity implements INamedContainer
     @Nullable
     @Override
     public TownBuilderContainer createMenu(
-        int transactionId,
-        PlayerInventory playerInventory,
-        PlayerEntity playerEntity
+            int transactionId,
+            PlayerInventory playerInventory,
+            PlayerEntity playerEntity
     ) {
         val world = playerEntity.world;
-        if (!world.isRemote) {
+        if (world.isRemote) {
             throw new IllegalStateException("TownBuilderTE#createMenu(...) called on remote world!");
         }
 
@@ -37,7 +37,10 @@ public class TownBuilderTileEntity extends TileEntity implements INamedContainer
         val z = pos.getZ() + 0.5;
         val cameraEntity = new TownBuilderCameraEntity(world, x, y, z);
         world.addEntity(cameraEntity);
-        Network.getServer().sendTo((ServerPlayerEntity) playerEntity, new CreateTownBuilderCameraMessage(cameraEntity));
+        Network.getServer().sendTo((ServerPlayerEntity) playerEntity,
+                                   CreateTownBuilderCameraMessage.builder()
+                                                                 .entityId(cameraEntity.getEntityId())
+                                                                 .build());
 
         return new TownBuilderContainer(transactionId, playerInventory, cameraEntity);
     }
