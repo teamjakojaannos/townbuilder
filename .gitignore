@@ -11,7 +11,9 @@ out
 *.ipr
 *.iws
 *.iml
-.idea
+.idea/*.xml
+.idea/dictionaries
+.idea/runConfigurations
 
 # gradle
 build
@@ -24,6 +26,3 @@ run-server
 
 # Files from Forge MDK
 forge*changelog.txt
-
-!.idea/codeStyles/codeStyleConfig.xml
-!.idea/codeStyles/Project.xml
