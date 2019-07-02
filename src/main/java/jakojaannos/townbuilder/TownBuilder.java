@@ -1,9 +1,12 @@
 package jakojaannos.townbuilder;
 
+import jakojaannos.townbuilder.entity.TownBuilderCameraEntity;
 import jakojaannos.townbuilder.init.InitContainerTypes;
 import lombok.extern.log4j.Log4j2;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -29,6 +32,8 @@ public class TownBuilder {
     public void clientSetup(final FMLClientSetupEvent event) {
         Network.activateClientHandlers();
         InitContainerTypes.registerScreenFactories();
+        ClientRegistry.registerEntityShader(TownBuilderCameraEntity.class,
+                                            new ResourceLocation(MOD_ID, "shaders/post/blueprint.json"));
     }
 
     @SubscribeEvent

@@ -15,6 +15,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 @OnlyIn(Dist.CLIENT)
 public class TownBuilderScreen extends ContainerScreen<TownBuilderContainer> {
     private static int cameraEntityId = -1;
+    private int oldThirdPersonView = 0;
 
     public static void receiveCameraEntityId(int entityId) {
         cameraEntityId = entityId;
@@ -75,11 +76,9 @@ public class TownBuilderScreen extends ContainerScreen<TownBuilderContainer> {
 
         cameraActive = true;
         cameraEntity = (TownBuilderCameraEntity) entity;
-        if (minecraft != null) {
-            minecraft.renderViewEntity = cameraEntity;
-        } else {
-            LOGGER.error("Minecraft instance was null when activating town builder camera!");
-        }
+        minecraft.setRenderViewEntity(cameraEntity);
+        oldThirdPersonView = minecraft.gameSettings.thirdPersonView;
+        minecraft.gameSettings.thirdPersonView = 1;
     }
 
     private void disableCamera() {
@@ -88,6 +87,7 @@ public class TownBuilderScreen extends ContainerScreen<TownBuilderContainer> {
         cameraEntity = null;
         if (minecraft != null) {
             minecraft.renderViewEntity = null;
+            minecraft.gameSettings.thirdPersonView = oldThirdPersonView;
         } else {
             LOGGER.error("Minecraft instance was null when disabling town builder camera!");
         }
