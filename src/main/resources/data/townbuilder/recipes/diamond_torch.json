@@ -10,7 +10,7 @@
     },
     "X":
       {
-        "item": "forge:gems/diamond"
+        "tag": "forge:gems/diamond"
       }
   },
   "result": {
