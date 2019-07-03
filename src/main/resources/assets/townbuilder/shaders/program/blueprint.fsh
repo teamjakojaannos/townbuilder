@@ -1,7 +1,7 @@
 #version 120
 
-#define GAMMA 0.45
-#define REGIONS 5.0
+#define GAMMA 0.3
+#define REGIONS 8.0
 
 uniform sampler2D DiffuseSampler;
 uniform sampler2D DepthSampler;
@@ -12,13 +12,7 @@ uniform float zFar;
 varying vec2 texCoord;
 varying vec2 oneTexel;
 
-float sigmoid(float a, float f)
-{
-    return 1.0/(1.0+exp(-f*a));
-}
-
-vec3 posterize(vec3 color)
-{
+vec3 posterize(vec3 color) {
     color = pow(color, vec3(GAMMA, GAMMA, GAMMA));
     color = floor(color * REGIONS) / REGIONS;
     color = pow(color, vec3(1.0 / GAMMA));
@@ -30,7 +24,7 @@ float linearizeDepth(float z) {
 }
 
 float depthSample(vec2 u) {
-    return linearizeDepth(texture2D(DepthSampler, u).x);
+    return texture2D(DepthSampler, u).x;
 }
 
 void main() {
@@ -38,23 +32,27 @@ void main() {
     vec4 posterized = vec4(posterize(texColor.rgb), 1.0);
 
     float center = depthSample(texCoord);
-    float up     = depthSample(texCoord + vec2(        0.0, -oneTexel.y));
-    float down   = depthSample(texCoord + vec2( oneTexel.x,         0.0));
-    float left   = depthSample(texCoord + vec2(-oneTexel.x,         0.0));
-    float right  = depthSample(texCoord + vec2(        0.0,  oneTexel.y));
+    float up     = depthSample(texCoord + vec2(0.0, -oneTexel.y));
+    float down   = depthSample(texCoord + vec2(oneTexel.x, 0.0));
+    float left   = depthSample(texCoord + vec2(-oneTexel.x, 0.0));
+    float right  = depthSample(texCoord + vec2(0.0, oneTexel.y));
     float uDiff = center - up;
     float dDiff = center - down;
     float lDiff = center - left;
     float rDiff = center - right;
-    float edgeStrength = clamp(uDiff + dDiff + lDiff + rDiff, 0.0, 1.0);
-    //edgeStrength = sigmoid(edgeStrength - 0.2, 32.0);
+    float sum = uDiff + dDiff + lDiff + rDiff;
+    float edgeStrength = abs(clamp(sum * zFar, -1.0, 1.0));
 
-    if (edgeStrength > 0.5) {
-        gl_FragColor = vec4(vec3(edgeStrength), 1.0);
+    if (edgeStrength > 0.075) {
+        gl_FragColor = vec4(vec3(0.75), 1.0);
+    } else if (edgeStrength > 0.01) {
+        gl_FragColor = vec4(vec3(0.35), 1.0);
     } else {
-        gl_FragColor = vec4(posterized.r * 0.1,
-                            posterized.g * 0.1,
-                            clamp(posterized.b * 2.0, 0.0, 1.0),
+        float val = max(max(posterized.r, posterized.g), posterized.b);
+        gl_FragColor = vec4(posterized.r * 0.15,
+                            posterized.g * 0.15,
+                            clamp(posterized.b * 2.0 + val, 0.15, 0.85),
                             1.0);
     }
 }
+
