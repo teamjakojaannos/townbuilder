@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "X",
+    "#"
+  ],
+  "key": {
+    "#": {
+      "tag": "forge:rods/wooden"
+    },
+    "X":
+      {
+        "item": "forge:gems/diamond"
+      }
+  },
+  "result": {
+    "item": "minecraft:torch",
+    "count": 20
+  }
+}
