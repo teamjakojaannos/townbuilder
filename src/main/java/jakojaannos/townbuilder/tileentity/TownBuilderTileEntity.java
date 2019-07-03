@@ -16,7 +16,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 import javax.annotation.Nullable;
 
 public class TownBuilderTileEntity extends TileEntity implements INamedContainerProvider {
-    private static final double CAMERA_HEIGHT = 25.0;
+    private static final double CAMERA_HEIGHT = 15.0;
 
     public TownBuilderTileEntity() {
         super(ModTileEntityTypes.TOWN_BUILDER);
@@ -34,10 +34,10 @@ public class TownBuilderTileEntity extends TileEntity implements INamedContainer
             throw new IllegalStateException("TownBuilderTE#createMenu(...) called on remote world!");
         }
 
-        val x = pos.getX() + 0.5;
+        val x = pos.getX() + 0.5 - CAMERA_HEIGHT;
         val y = pos.getY() + 0.5 + CAMERA_HEIGHT;
-        val z = pos.getZ() + 0.5;
-        val cameraEntity = new TownBuilderCameraEntity(world, x, y, z, 90.0f, 0.0f);
+        val z = pos.getZ() + 0.5 - CAMERA_HEIGHT;
+        val cameraEntity = new TownBuilderCameraEntity(world, x, y, z, 45.0f, -45.0f);
         world.addEntity(cameraEntity);
         Network.getServer().sendTo((ServerPlayerEntity) playerEntity,
                                    CreateTownBuilderCameraMessage.builder()
