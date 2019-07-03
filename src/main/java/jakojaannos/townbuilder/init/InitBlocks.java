@@ -2,6 +2,7 @@ package jakojaannos.townbuilder.init;
 
 import com.google.common.collect.Lists;
 import jakojaannos.townbuilder.TownBuilder;
+import jakojaannos.townbuilder.block.MyTestBlock;
 import jakojaannos.townbuilder.block.TownBuilderBlock;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.block.Block;
@@ -21,7 +22,8 @@ import java.util.function.Function;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 class InitBlocks {
     private static final List<Tuple<Block, BlockItem>> blocks = Lists.newArrayList(
-        create("town_builder", new TownBuilderBlock(Block.Properties.create(Material.ROCK)))
+        create("town_builder", new TownBuilderBlock(Block.Properties.create(Material.ROCK))),
+        create("mytestblock", new MyTestBlock(Block.Properties.create(Material.WOOD)))
     );
 
     private static Tuple<Block, BlockItem> create(String key, Block block) {
