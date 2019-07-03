@@ -1,6 +1,6 @@
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-package jakojaannos.townbuilder.entity;
+package jakojaannos.townbuilder.network;
 
 import mcp.MethodsReturnNonnullByDefault;
 

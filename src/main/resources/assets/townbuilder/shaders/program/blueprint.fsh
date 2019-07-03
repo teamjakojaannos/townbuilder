@@ -1,7 +1,7 @@
 #version 120
 
-#define GAMMA 0.65
-#define REGIONS 5.0
+#define GAMMA 0.3
+#define REGIONS 8.0
 
 uniform sampler2D DiffuseSampler;
 uniform sampler2D DepthSampler;
@@ -24,7 +24,7 @@ float linearizeDepth(float z) {
 }
 
 float depthSample(vec2 u) {
-    return linearizeDepth(texture2D(DepthSampler, u).x);
+    return texture2D(DepthSampler, u).x;
 }
 
 void main() {
@@ -41,14 +41,17 @@ void main() {
     float lDiff = center - left;
     float rDiff = center - right;
     float sum = uDiff + dDiff + lDiff + rDiff;
-    float edgeStrength = clamp(sum * zFar, -1.0, 1.0);
+    float edgeStrength = abs(clamp(sum * zFar, -1.0, 1.0));
 
-    if (abs(edgeStrength) > 0.01) {
-        gl_FragColor = vec4(vec3(0.95), 1.0);
+    if (edgeStrength > 0.075) {
+        gl_FragColor = vec4(vec3(0.75), 1.0);
+    } else if (edgeStrength > 0.01) {
+        gl_FragColor = vec4(vec3(0.35), 1.0);
     } else {
-        gl_FragColor = vec4(posterized.r * 0.1,
-                            posterized.g * 0.1,
-                            clamp(posterized.b * 3.0, 0.33, 1.0),
+        float val = max(max(posterized.r, posterized.g), posterized.b);
+        gl_FragColor = vec4(posterized.r * 0.15,
+                            posterized.g * 0.15,
+                            clamp(posterized.b * 2.0 + val, 0.15, 0.85),
                             1.0);
     }
 }
