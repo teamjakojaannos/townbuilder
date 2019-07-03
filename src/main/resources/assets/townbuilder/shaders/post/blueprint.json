@@ -1,12 +1,19 @@
 {
   "targets": [
-    "swap"
+    "swap",
+    "townbuilder:depth"
   ],
   "passes": [
     {
       "name": "townbuilder:blueprint",
       "intarget": "minecraft:main",
-      "outtarget": "swap"
+      "outtarget": "swap",
+      "auxtargets": [
+        {
+          "name": "DepthSampler",
+          "id": "townbuilder:depth"
+        }
+      ]
     },
     {
       "name": "blit",

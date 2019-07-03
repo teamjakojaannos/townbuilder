@@ -1,5 +1,6 @@
 package jakojaannos.townbuilder.client.gui.screen.inventory;
 
+import jakojaannos.townbuilder.client.ShaderHelper;
 import jakojaannos.townbuilder.entity.TownBuilderCameraEntity;
 import jakojaannos.townbuilder.inventory.container.TownBuilderContainer;
 import lombok.extern.log4j.Log4j2;
@@ -79,12 +80,18 @@ public class TownBuilderScreen extends ContainerScreen<TownBuilderContainer> {
         minecraft.setRenderViewEntity(cameraEntity);
         oldThirdPersonView = minecraft.gameSettings.thirdPersonView;
         minecraft.gameSettings.thirdPersonView = 1;
+
+        val loadedShader = minecraft.gameRenderer.getShaderGroup();
+        if (loadedShader != null) {
+            ShaderHelper.applyDepthTextureFramebuffer(loadedShader.getFramebufferRaw("townbuilder:depth"));
+        }
     }
 
     private void disableCamera() {
         cameraActive = false;
         cameraEntityId = -1;
         cameraEntity = null;
+        ShaderHelper.clearDepthTextureFramebuffer();
         if (minecraft != null) {
             minecraft.renderViewEntity = null;
             minecraft.gameSettings.thirdPersonView = oldThirdPersonView;
