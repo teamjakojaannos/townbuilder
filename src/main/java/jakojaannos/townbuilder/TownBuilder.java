@@ -1,6 +1,7 @@
 package jakojaannos.townbuilder;
 
 import jakojaannos.townbuilder.client.TownBuilderClient;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -33,7 +34,7 @@ public class TownBuilder {
     private TownBuilderClient client;
 
     @OnlyIn(Dist.CLIENT)
-    private static TownBuilderClient getClient() {
+    public static TownBuilderClient getClient() {
         return instance.client;
     }
 
