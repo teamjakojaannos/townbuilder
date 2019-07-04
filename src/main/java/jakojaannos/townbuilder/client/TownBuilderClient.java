@@ -1,6 +1,7 @@
 package jakojaannos.townbuilder.client;
 
 import jakojaannos.townbuilder.TownBuilder;
+import jakojaannos.townbuilder.client.entity.ClientTownBuilderCameraEntity;
 import jakojaannos.townbuilder.client.settings.ModGameSettings;
 import jakojaannos.townbuilder.entity.TownBuilderCameraEntity;
 import jakojaannos.townbuilder.init.InitContainerTypes;
@@ -14,7 +15,7 @@ public class TownBuilderClient {
 
     public TownBuilderClient() {
         InitContainerTypes.registerScreenFactories();
-        ClientRegistry.registerEntityShader(TownBuilderCameraEntity.class,
+        ClientRegistry.registerEntityShader(ClientTownBuilderCameraEntity.class,
                                             new ResourceLocation(TownBuilder.MOD_ID, "shaders/post/blueprint.json"));
 
         MinecraftForge.EVENT_BUS.register(ShaderHelper.class);

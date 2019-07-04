@@ -11,12 +11,12 @@ import org.lwjgl.glfw.GLFW;
 public class ModGameSettings {
     private static final String CATEGORY_BUILDER = "key.townbuilder.categories.builder";
 
-    public final KeyBinding keyBindBuilderMoveLeft = new KeyBinding("key.townbuilder.builder.moveLeft", ModKeyConflictContext.BUILDER, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_W, CATEGORY_BUILDER);
-    public final KeyBinding keyBindBuilderMoveRight = new KeyBinding("key.townbuilder.builder.moveRight", ModKeyConflictContext.BUILDER, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_W, CATEGORY_BUILDER);
+    public final KeyBinding keyBindBuilderMoveLeft = new KeyBinding("key.townbuilder.builder.moveLeft", ModKeyConflictContext.BUILDER, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_A, CATEGORY_BUILDER);
+    public final KeyBinding keyBindBuilderMoveRight = new KeyBinding("key.townbuilder.builder.moveRight", ModKeyConflictContext.BUILDER, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_D, CATEGORY_BUILDER);
     public final KeyBinding keyBindBuilderMoveForward = new KeyBinding("key.townbuilder.builder.moveForward", ModKeyConflictContext.BUILDER, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_W, CATEGORY_BUILDER);
-    public final KeyBinding keyBindBuilderMoveBack = new KeyBinding("key.townbuilder.builder.moveBack", ModKeyConflictContext.BUILDER, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_W, CATEGORY_BUILDER);
-    public final KeyBinding keyBindBuilderRotateLeft = new KeyBinding("key.townbuilder.builder.rotateLeft", ModKeyConflictContext.BUILDER, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_W, CATEGORY_BUILDER);
-    public final KeyBinding keyBindBuilderRotateRight = new KeyBinding("key.townbuilder.builder.rotateRight", ModKeyConflictContext.BUILDER, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_W, CATEGORY_BUILDER);
+    public final KeyBinding keyBindBuilderMoveBack = new KeyBinding("key.townbuilder.builder.moveBack", ModKeyConflictContext.BUILDER, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_S, CATEGORY_BUILDER);
+    public final KeyBinding keyBindBuilderRotateLeft = new KeyBinding("key.townbuilder.builder.rotateLeft", ModKeyConflictContext.BUILDER, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_Q, CATEGORY_BUILDER);
+    public final KeyBinding keyBindBuilderRotateRight = new KeyBinding("key.townbuilder.builder.rotateRight", ModKeyConflictContext.BUILDER, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_E, CATEGORY_BUILDER);
 
     public ModGameSettings() {
         ClientRegistry.registerKeyBinding(keyBindBuilderMoveLeft);

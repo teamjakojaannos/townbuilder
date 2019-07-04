@@ -34,6 +34,7 @@ public class TownBuilderScreen extends ContainerScreen<TownBuilderContainer> {
     ) {
         super(container, playerInventory, textComponent);
         this.world = playerInventory.player.world;
+        this.passEvents = true;
     }
 
     @Override

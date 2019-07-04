@@ -1,6 +1,7 @@
 package jakojaannos.townbuilder.init;
 
 import jakojaannos.townbuilder.TownBuilder;
+import jakojaannos.townbuilder.client.entity.ClientTownBuilderCameraEntity;
 import jakojaannos.townbuilder.entity.TownBuilderCameraEntity;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
@@ -21,8 +22,10 @@ class InitEntityTypes {
         event.getRegistry()
              .register(create("town_builder_camera",
                               EntityType.Builder.create(EntityClassification.MISC)
-                                                .setCustomClientFactory((spawnEntity, world) -> new TownBuilderCameraEntity(world))
+                                                .setCustomClientFactory((spawnEntity, world) -> new ClientTownBuilderCameraEntity(world))
                                                 .immuneToFire()
+                                                .disableSummoning()
+                                                .disableSerialization()
                                                 .size(0.1f, 0.1f)));
     }
 

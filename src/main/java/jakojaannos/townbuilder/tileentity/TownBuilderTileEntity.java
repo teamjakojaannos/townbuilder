@@ -37,7 +37,14 @@ public class TownBuilderTileEntity extends TileEntity implements INamedContainer
         val x = pos.getX() + 0.5 - CAMERA_HEIGHT / 2;
         val y = pos.getY() + 0.5 + CAMERA_HEIGHT;
         val z = pos.getZ() + 0.5 - CAMERA_HEIGHT / 2;
-        val cameraEntity = new TownBuilderCameraEntity(world, x, y, z, 45.0f, -45.0f);
+        val cameraEntity = new TownBuilderCameraEntity(world,
+                                                       playerEntity,
+                                                       this,
+                                                       x,
+                                                       y,
+                                                       z,
+                                                       45.0f,
+                                                       -45.0f);
         world.addEntity(cameraEntity);
         Network.getServer().sendTo((ServerPlayerEntity) playerEntity,
                                    CreateTownBuilderCameraMessage.builder()
