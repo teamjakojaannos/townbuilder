@@ -4,12 +4,13 @@ import jakojaannos.townbuilder.TownBuilder;
 import jakojaannos.townbuilder.client.settings.ModGameSettings;
 import jakojaannos.townbuilder.entity.TownBuilderCameraEntity;
 import jakojaannos.townbuilder.init.InitContainerTypes;
+import lombok.Getter;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 
 public class TownBuilderClient {
-    private final ModGameSettings gameSettings;
+    @Getter private final ModGameSettings gameSettings;
 
     public TownBuilderClient() {
         InitContainerTypes.registerScreenFactories();
