@@ -2,6 +2,7 @@ package jakojaannos.townbuilder.client;
 
 import jakojaannos.townbuilder.TownBuilder;
 import jakojaannos.townbuilder.client.entity.ClientTownBuilderCameraEntity;
+import jakojaannos.townbuilder.client.handler.KeyInputEventHandler;
 import jakojaannos.townbuilder.client.settings.ModGameSettings;
 import jakojaannos.townbuilder.entity.TownBuilderCameraEntity;
 import jakojaannos.townbuilder.init.InitContainerTypes;
@@ -19,6 +20,7 @@ public class TownBuilderClient {
                                             new ResourceLocation(TownBuilder.MOD_ID, "shaders/post/blueprint.json"));
 
         MinecraftForge.EVENT_BUS.register(ShaderHelper.class);
+        MinecraftForge.EVENT_BUS.register(KeyInputEventHandler.class);
 
         this.gameSettings = new ModGameSettings();
     }
