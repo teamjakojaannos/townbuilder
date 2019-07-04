@@ -7,6 +7,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.IPacket;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.network.NetworkHooks;
@@ -14,6 +15,11 @@ import net.minecraftforge.fml.network.NetworkHooks;
 public class TownBuilderCameraEntity extends Entity implements IEntityAdditionalSpawnData {
     protected PlayerEntity owner;
     protected TownBuilderTileEntity townTileEntity;
+    private BlockPos origin;
+    private float cameraHeight;
+    private float cameraOffset;
+
+    private CameraFacing facing;
 
     protected TownBuilderCameraEntity(World world) {
         super(ModEntityTypes.TOWN_BUILDER_CAMERA, world);
@@ -23,24 +29,31 @@ public class TownBuilderCameraEntity extends Entity implements IEntityAdditional
             World world,
             PlayerEntity owner,
             TownBuilderTileEntity townTileEntity,
-            double x,
-            double y,
-            double z,
-            float pitch,
-            float yaw
+            BlockPos origin,
+            float cameraHeight,
+            float cameraOffset
     ) {
         this(world);
+        this.rotationPitch = 45.0f;
         this.owner = owner;
         this.townTileEntity = townTileEntity;
+        this.origin = origin;
+        this.cameraHeight = cameraHeight;
+        this.cameraOffset = cameraOffset;
 
-        setPosition(x, y, z);
-        prevPosX = x;
-        prevPosY = y;
-        prevPosZ = z;
+        this.facing = CameraFacing.findFromYaw(owner.cameraYaw);
+        facing.applyOffsets(this, origin, cameraOffset);
+        prevPosY = posY = origin.getY() + cameraHeight;
+    }
 
-        setRotation(yaw, pitch);
-        prevRotationPitch = pitch;
-        prevRotationYaw = yaw;
+    public void rotateCCW() {
+        facing = facing.rotateCCW();
+        facing.applyOffsets(this, origin, cameraOffset);
+    }
+
+    public void rotate() {
+        facing = facing.rotate();
+        facing.applyOffsets(this, origin, cameraOffset);
     }
 
     @Override
@@ -67,12 +80,19 @@ public class TownBuilderCameraEntity extends Entity implements IEntityAdditional
     public void writeSpawnData(PacketBuffer buffer) {
         buffer.writeUniqueId(owner.getUniqueID());
         buffer.writeBlockPos(townTileEntity.getPos());
+        buffer.writeBlockPos(origin);
+        buffer.writeFloat(cameraOffset);
+        buffer.writeFloat(cameraHeight);
     }
 
     @Override
     public void readSpawnData(PacketBuffer additionalData) {
         val ownerUUID = additionalData.readUniqueId();
         val tileEntityPos = additionalData.readBlockPos();
+        this.origin = additionalData.readBlockPos();
+        this.cameraOffset = additionalData.readFloat();
+        this.cameraHeight = additionalData.readFloat();
+        this.facing = CameraFacing.findFromYaw(rotationYaw);
 
         val world = getEntityWorld();
         val tileEntity = world.getTileEntity(tileEntityPos);
@@ -87,6 +107,49 @@ public class TownBuilderCameraEntity extends Entity implements IEntityAdditional
             this.owner = owner;
         } else {
             LOGGER.error("Could not determine owning player by UUID specified by spawn data!");
+        }
+    }
+
+    public enum CameraFacing {
+        SOUTH_WEST(45.0f + 90.0f * 0, 1.0f, -1.0f),
+        NORTH_WEST(45.0f + 90.0f * 1, 1.0f, 1.0f),
+        NORTH_EAST(45.0f + 90.0f * 2, -1.0f, 1.0f),
+        SOUTH_EAST(45.0f + 90.0f * 3, -1.0f, -1.0f);
+
+        private final float yaw;
+        private final float xOffset;
+        private final float zOffset;
+
+        CameraFacing(float yaw, float xOffset, float zOffset) {
+            this.yaw = yaw;
+            this.xOffset = xOffset;
+            this.zOffset = zOffset;
+        }
+
+        public static CameraFacing findFromYaw(float yaw) {
+            if (yaw >= 270.0) {
+                return SOUTH_EAST;
+            } else if (yaw >= 180.0) {
+                return NORTH_EAST;
+            } else if (yaw >= 90.0f) {
+                return NORTH_WEST;
+            } else {
+                return SOUTH_WEST;
+            }
+        }
+
+        public void applyOffsets(Entity entity, BlockPos origin, float offset) {
+            entity.rotationYaw = yaw;
+            entity.posX = origin.getX() + xOffset * offset;
+            entity.posZ = origin.getZ() + zOffset * offset;
+        }
+
+        public CameraFacing rotate() {
+            return ordinal() == 3 ? SOUTH_WEST : values()[ordinal() + 1];
+        }
+
+        public CameraFacing rotateCCW() {
+            return ordinal() == 0 ? SOUTH_EAST : values()[ordinal() - 1];
         }
     }
 }
