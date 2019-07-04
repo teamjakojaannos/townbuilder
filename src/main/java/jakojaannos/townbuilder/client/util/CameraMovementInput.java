@@ -9,7 +9,10 @@ public class CameraMovementInput {
     private boolean backKeyDown;
     private boolean leftKeyDown;
     private boolean rightKeyDown;
+    private boolean rotateHeld;
 
+    @Getter private boolean rotateLeft;
+    @Getter private boolean rotateRight;
     @Getter private float inputHorizontal;
     @Getter private float inputVertical;
 
@@ -23,6 +26,12 @@ public class CameraMovementInput {
         backKeyDown = gameSettings.keyBindBuilderMoveBack.isKeyDown();
         leftKeyDown = gameSettings.keyBindBuilderMoveLeft.isKeyDown();
         rightKeyDown = gameSettings.keyBindBuilderMoveRight.isKeyDown();
+
+        val rotateLeftDown = gameSettings.keyBindBuilderRotateLeft.isKeyDown();
+        val rotateRightDown = gameSettings.keyBindBuilderRotateRight.isKeyDown();
+        rotateLeft = rotateLeftDown && !rotateHeld;
+        rotateRight = rotateRightDown && !rotateHeld;
+        rotateHeld = rotateLeftDown || rotateRightDown;
 
         inputVertical = (forwardKeyDown ? 1 : 0) - (backKeyDown ? 1 : 0);
         inputHorizontal = (rightKeyDown ? 1 : 0) - (leftKeyDown ? 1 : 0);

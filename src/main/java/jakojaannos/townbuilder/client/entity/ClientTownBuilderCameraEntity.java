@@ -6,6 +6,7 @@ import lombok.extern.log4j.Log4j2;
 import lombok.val;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.Rotation;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -55,6 +56,14 @@ public class ClientTownBuilderCameraEntity extends TownBuilderCameraEntity {
             setPosition(posX + x, posY, posZ + z);
         } else {
             setMotion(0.0, 0.0, 0.0);
+        }
+
+        if (movementInput.isRotateLeft()) {
+            setRotation(getRotatedYaw(Rotation.COUNTERCLOCKWISE_90), rotationPitch);
+        }
+
+        if (movementInput.isRotateRight()) {
+            setRotation(getRotatedYaw(Rotation.CLOCKWISE_90), rotationPitch);
         }
     }
 }

@@ -3,9 +3,13 @@ package jakojaannos.townbuilder.client.gui.screen.inventory;
 import jakojaannos.townbuilder.client.ShaderHelper;
 import jakojaannos.townbuilder.entity.TownBuilderCameraEntity;
 import jakojaannos.townbuilder.inventory.container.TownBuilderContainer;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
+import net.minecraft.client.gui.IHasContainer;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
+import net.minecraft.client.util.InputMappings;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
@@ -14,7 +18,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 @Log4j2
 @OnlyIn(Dist.CLIENT)
-public class TownBuilderScreen extends ContainerScreen<TownBuilderContainer> {
+public class TownBuilderScreen extends Screen implements IHasContainer<TownBuilderContainer> {
     private static int cameraEntityId = -1;
     private int oldThirdPersonView = 0;
 
@@ -22,6 +26,7 @@ public class TownBuilderScreen extends ContainerScreen<TownBuilderContainer> {
         cameraEntityId = entityId;
     }
 
+    @Getter private final TownBuilderContainer container;
     private final World world;
 
     private TownBuilderCameraEntity cameraEntity;
@@ -32,25 +37,30 @@ public class TownBuilderScreen extends ContainerScreen<TownBuilderContainer> {
             PlayerInventory playerInventory,
             ITextComponent textComponent
     ) {
-        super(container, playerInventory, textComponent);
+        super(textComponent);
+        this.container = container;
         this.world = playerInventory.player.world;
-        this.passEvents = true;
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
     }
 
     @Override
     public void tick() {
         activateCamera();
         super.tick();
-    }
-
-    @Override
-    protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
-
+        if (!minecraft.player.isAlive() || minecraft.player.removed) {
+            this.minecraft.player.closeScreen();
+        }
     }
 
     @Override
     public void removed() {
-        super.removed();
+        if (this.minecraft.player != null) {
+            this.container.onContainerClosed(this.minecraft.player);
+        }
         disableCamera();
     }
 
