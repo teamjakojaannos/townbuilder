@@ -1,5 +1,6 @@
 package jakojaannos.townbuilder;
 
+import jakojaannos.townbuilder.client.ModClientNetworkManager;
 import jakojaannos.townbuilder.network.CreateTownBuilderCameraMessage;
 import jakojaannos.townbuilder.network.MessageAdapter;
 import jakojaannos.townbuilder.network.MessageField;
@@ -28,6 +29,11 @@ public class Network {
 
     public static ModServerNetworkManager getServer() {
         return ModServerNetworkManager.getInstance(CHANNEL_INSTANCE);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static ModClientNetworkManager getClient() {
+        return ModClientNetworkManager.getInstance(CHANNEL_INSTANCE);
     }
 
     static void registerMessages() {
