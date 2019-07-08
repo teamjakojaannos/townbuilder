@@ -8,6 +8,7 @@ import lombok.val;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -63,12 +64,10 @@ public class ClientTownBuilderCameraEntity extends TownBuilderCameraEntity {
             val xRaw = movementInput.getInputHorizontal();
             val zRaw = movementInput.getInputVertical();
 
-            val cos = Math.cos(Math.toRadians(rotationYaw));
-            val sin = Math.sin(Math.toRadians(rotationYaw));
-
-            // TODO: Something fishy with these
-            val x = xRaw * cos + zRaw * sin;
-            val z = xRaw * sin - zRaw * cos;
+            val sin = Math.sin(Math.toRadians(MathHelper.wrapDegrees(-rotationYaw - 90.0f)));
+            val cos = Math.cos(Math.toRadians(MathHelper.wrapDegrees(-rotationYaw - 90.0f)));
+            val x = xRaw * sin + zRaw * cos;
+            val z = xRaw * cos - zRaw * sin;
 
             setMotion(x, 0.0, z);
             setPosition(posX + x, posY, posZ + z);

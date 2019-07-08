@@ -9,6 +9,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.IPacket;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 public class TownBuilderCameraEntity extends Entity {
@@ -93,6 +94,7 @@ public class TownBuilderCameraEntity extends Entity {
         }
 
         public static CameraFacing findFromYaw(float yaw) {
+            yaw = MathHelper.wrapDegrees(yaw - 180.0f) + 180.0f;
             if (yaw >= 270.0) {
                 return SOUTH_EAST;
             } else if (yaw >= 180.0) {
