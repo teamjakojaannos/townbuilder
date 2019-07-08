@@ -1,6 +1,7 @@
 package jakojaannos.townbuilder;
 
 import jakojaannos.townbuilder.client.TownBuilderClient;
+import jakojaannos.townbuilder.init.InitEntityTypes;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.minecraftforge.api.distmarker.Dist;
@@ -28,6 +29,8 @@ public class TownBuilder {
             throw LOGGER.throwing(new IllegalStateException("Multiple instances of mod TownBuilder being constructed!"));
         }
         instance = this;
+
+        Network.registerMessages();
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -40,11 +43,12 @@ public class TownBuilder {
 
     @SubscribeEvent
     public void setup(final FMLCommonSetupEvent event) {
-        Network.registerMessages();
+        //Network.registerMessages();
     }
 
     @SubscribeEvent
     public void clientSetup(final FMLClientSetupEvent event) {
+        InitEntityTypes.flag = true;
         Network.activateClientHandlers();
         client = new TownBuilderClient();
     }

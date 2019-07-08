@@ -1,8 +1,6 @@
 package jakojaannos.townbuilder.init;
 
 import jakojaannos.townbuilder.TownBuilder;
-import jakojaannos.townbuilder.client.entity.ClientTownBuilderCameraEntity;
-import jakojaannos.townbuilder.entity.TownBuilderCameraEntity;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
 import net.minecraft.entity.Entity;
@@ -14,7 +12,10 @@ import net.minecraftforge.fml.common.Mod;
 
 @Log4j2
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+public
 class InitEntityTypes {
+    public static boolean flag = false;
+
     @SubscribeEvent
     public static void onEntityTypeRegistry(final RegistryEvent.Register<EntityType<?>> event) {
         LOGGER.debug("Registering EntityTypes");
@@ -22,7 +23,6 @@ class InitEntityTypes {
         event.getRegistry()
              .register(create("town_builder_camera",
                               EntityType.Builder.create(EntityClassification.MISC)
-                                                .setCustomClientFactory((spawnEntity, world) -> new ClientTownBuilderCameraEntity(world))
                                                 .immuneToFire()
                                                 .disableSummoning()
                                                 .disableSerialization()

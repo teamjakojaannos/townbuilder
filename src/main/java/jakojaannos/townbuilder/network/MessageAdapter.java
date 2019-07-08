@@ -1,5 +1,6 @@
 package jakojaannos.townbuilder.network;
 
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
 import net.minecraft.network.PacketBuffer;
@@ -15,7 +16,8 @@ import java.util.function.Supplier;
 
 @Log4j2
 public class MessageAdapter<TMessage, TBuilder> {
-    private final Class<TMessage> messageClass;
+    @Getter private final Class<TMessage> messageClass;
+
     private final Supplier<TBuilder> builderFactory;
     private final Function<TBuilder, TMessage> buildCaller;
     private final List<MessageField<?, TMessage, TBuilder>> fields = new ArrayList<>();
@@ -81,12 +83,16 @@ public class MessageAdapter<TMessage, TBuilder> {
         return this;
     }
 
-    public MessageAdapter<TMessage, TBuilder> withClientsideHandler(BiConsumer<TMessage, Supplier<NetworkEvent.Context>> handler) {
+    public MessageAdapter<TMessage, TBuilder> withClientsideHandler(
+            BiConsumer<TMessage, Supplier<NetworkEvent.Context>> handler
+    ) {
         this.clientHandler = handler;
         return this;
     }
 
-    public MessageAdapter<TMessage, TBuilder> withServersideHandler(BiConsumer<TMessage, Supplier<NetworkEvent.Context>> handler) {
+    public MessageAdapter<TMessage, TBuilder> withServersideHandler(
+            BiConsumer<TMessage, Supplier<NetworkEvent.Context>> handler
+    ) {
         this.serverHandler = handler;
         return this;
     }

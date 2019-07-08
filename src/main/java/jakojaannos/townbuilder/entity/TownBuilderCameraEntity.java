@@ -1,113 +1,79 @@
 package jakojaannos.townbuilder.entity;
 
+import jakojaannos.townbuilder.Network;
+import jakojaannos.townbuilder.network.SpawnTownBuilderCameraMessage;
 import jakojaannos.townbuilder.tileentity.TownBuilderTileEntity;
 import lombok.val;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.IPacket;
-import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
-import net.minecraftforge.fml.network.NetworkHooks;
 
-public class TownBuilderCameraEntity extends Entity implements IEntityAdditionalSpawnData {
-    protected PlayerEntity owner;
-    protected TownBuilderTileEntity townTileEntity;
+public class TownBuilderCameraEntity extends Entity {
+    private PlayerEntity owner;
+    private TownBuilderTileEntity townTileEntity;
     private BlockPos origin;
     private float cameraHeight;
     private float cameraOffset;
 
     private CameraFacing facing;
 
-    protected TownBuilderCameraEntity(World world) {
-        super(ModEntityTypes.TOWN_BUILDER_CAMERA, world);
-    }
-
     public TownBuilderCameraEntity(
             World world,
             PlayerEntity owner,
             TownBuilderTileEntity townTileEntity,
             BlockPos origin,
+            CameraFacing facing,
             float cameraHeight,
             float cameraOffset
     ) {
-        this(world);
+        super(ModEntityTypes.TOWN_BUILDER_CAMERA, world);
         this.rotationPitch = 45.0f;
         this.owner = owner;
         this.townTileEntity = townTileEntity;
         this.origin = origin;
         this.cameraHeight = cameraHeight;
         this.cameraOffset = cameraOffset;
-
-        this.facing = CameraFacing.findFromYaw(owner.cameraYaw);
-        facing.applyOffsets(this, origin, cameraOffset);
-        prevPosY = posY = origin.getY() + cameraHeight;
+        this.facing = facing;
+        facing.applyOffsets(this, origin, cameraOffset, cameraHeight);
     }
 
     public void rotateCCW() {
         facing = facing.rotateCCW();
-        facing.applyOffsets(this, origin, cameraOffset);
+        facing.applyOffsets(this, origin, cameraOffset, cameraHeight);
     }
 
     public void rotate() {
         facing = facing.rotate();
-        facing.applyOffsets(this, origin, cameraOffset);
+        facing.applyOffsets(this, origin, cameraOffset, cameraHeight);
     }
 
     @Override
     protected void registerData() {
-
     }
 
     @Override
     protected void readAdditional(CompoundNBT compound) {
-
     }
 
     @Override
     protected void writeAdditional(CompoundNBT compound) {
-
     }
 
     @Override
     public IPacket<?> createSpawnPacket() {
-        return NetworkHooks.getEntitySpawningPacket(this);
-    }
-
-    @Override
-    public void writeSpawnData(PacketBuffer buffer) {
-        buffer.writeUniqueId(owner.getUniqueID());
-        buffer.writeBlockPos(townTileEntity.getPos());
-        buffer.writeBlockPos(origin);
-        buffer.writeFloat(cameraOffset);
-        buffer.writeFloat(cameraHeight);
-    }
-
-    @Override
-    public void readSpawnData(PacketBuffer additionalData) {
-        val ownerUUID = additionalData.readUniqueId();
-        val tileEntityPos = additionalData.readBlockPos();
-        this.origin = additionalData.readBlockPos();
-        this.cameraOffset = additionalData.readFloat();
-        this.cameraHeight = additionalData.readFloat();
-        this.facing = CameraFacing.findFromYaw(rotationYaw);
-
-        val world = getEntityWorld();
-        val tileEntity = world.getTileEntity(tileEntityPos);
-        if (tileEntity instanceof TownBuilderTileEntity) {
-            this.townTileEntity = (TownBuilderTileEntity) tileEntity;
-        } else {
-            LOGGER.error("Could not find suitable TileEntity for builder camera at coordinates specified in spawn data!");
-        }
-
-        val owner = world.getPlayerByUuid(ownerUUID);
-        if (owner != null) {
-            this.owner = owner;
-        } else {
-            LOGGER.error("Could not determine owning player by UUID specified by spawn data!");
-        }
+        val spawnMessage = SpawnTownBuilderCameraMessage.builder()
+                                                        .entityId(getEntityId())
+                                                        .uuid(getUniqueID())
+                                                        .owner(owner.getUniqueID())
+                                                        .origin(origin)
+                                                        .yaw(rotationYaw)
+                                                        .offset(cameraOffset)
+                                                        .height(cameraHeight)
+                                                        .build();
+        return Network.getServer().asPacket(spawnMessage);
     }
 
     public enum CameraFacing {
@@ -138,9 +104,10 @@ public class TownBuilderCameraEntity extends Entity implements IEntityAdditional
             }
         }
 
-        public void applyOffsets(Entity entity, BlockPos origin, float offset) {
+        public void applyOffsets(Entity entity, BlockPos origin, float offset, float height) {
             entity.rotationYaw = yaw;
             entity.posX = origin.getX() + xOffset * offset;
+            entity.posY = origin.getY() + height;
             entity.posZ = origin.getZ() + zOffset * offset;
         }
 

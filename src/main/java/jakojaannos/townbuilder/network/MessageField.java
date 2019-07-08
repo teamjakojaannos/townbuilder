@@ -2,7 +2,9 @@ package jakojaannos.townbuilder.network;
 
 import lombok.RequiredArgsConstructor;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.math.BlockPos;
 
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -27,6 +29,36 @@ public class MessageField<T, TMessage, TBuilder> {
     ) {
         return MessageField.of(PacketBuffer::writeInt,
                                PacketBuffer::readInt,
+                               valueGetter,
+                               builderSetter);
+    }
+
+    public static <TMessage, TBuilder> MessageField<Float, TMessage, TBuilder> ofFloat(
+            Function<TMessage, Float> valueGetter,
+            BiConsumer<TBuilder, Float> builderSetter
+    ) {
+        return MessageField.of(PacketBuffer::writeFloat,
+                               PacketBuffer::readFloat,
+                               valueGetter,
+                               builderSetter);
+    }
+
+    public static <TMessage, TBuilder> MessageField<UUID, TMessage, TBuilder> ofUUID(
+            Function<TMessage, UUID> valueGetter,
+            BiConsumer<TBuilder, UUID> builderSetter
+    ) {
+        return MessageField.of(PacketBuffer::writeUniqueId,
+                               PacketBuffer::readUniqueId,
+                               valueGetter,
+                               builderSetter);
+    }
+
+    public static <TMessage, TBuilder> MessageField<BlockPos, TMessage, TBuilder> ofBlockPos(
+            Function<TMessage, BlockPos> valueGetter,
+            BiConsumer<TBuilder, BlockPos> builderSetter
+    ) {
+        return MessageField.of(PacketBuffer::writeBlockPos,
+                               PacketBuffer::readBlockPos,
                                valueGetter,
                                builderSetter);
     }

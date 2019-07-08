@@ -1,6 +1,7 @@
 package jakojaannos.townbuilder.client.gui.screen.inventory;
 
 import jakojaannos.townbuilder.client.ShaderHelper;
+import jakojaannos.townbuilder.client.entity.ClientTownBuilderCameraEntity;
 import jakojaannos.townbuilder.entity.TownBuilderCameraEntity;
 import jakojaannos.townbuilder.inventory.container.TownBuilderContainer;
 import lombok.Getter;
@@ -19,17 +20,15 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 @Log4j2
 @OnlyIn(Dist.CLIENT)
 public class TownBuilderScreen extends Screen implements IHasContainer<TownBuilderContainer> {
-    private static int cameraEntityId = -1;
+    private static ClientTownBuilderCameraEntity cameraEntity;
     private int oldThirdPersonView = 0;
 
-    public static void receiveCameraEntityId(int entityId) {
-        cameraEntityId = entityId;
+    public static void receiveCameraEntity(ClientTownBuilderCameraEntity cameraEntity) {
+        TownBuilderScreen.cameraEntity = cameraEntity;
     }
 
     @Getter private final TownBuilderContainer container;
-    private final World world;
 
-    private TownBuilderCameraEntity cameraEntity;
     private boolean cameraActive;
 
     public TownBuilderScreen(
@@ -39,7 +38,6 @@ public class TownBuilderScreen extends Screen implements IHasContainer<TownBuild
     ) {
         super(textComponent);
         this.container = container;
-        this.world = playerInventory.player.world;
     }
 
     @Override
@@ -69,25 +67,11 @@ public class TownBuilderScreen extends Screen implements IHasContainer<TownBuild
             throw LOGGER.throwing(new IllegalStateException("activateCamera() called too early!"));
         }
 
-        if (cameraActive || cameraEntityId == -1) {
-            return;
-        }
-
-        val entity = world.getEntityByID(cameraEntityId);
-        if (entity == null) {
-            LOGGER.warn("Camera entity ID was set but could not find entity with given ID.");
-            cameraEntityId = -1;
-            return;
-        }
-
-        if (!(entity instanceof TownBuilderCameraEntity)) {
-            LOGGER.error("Received camera entity ID but the entity is of wrong type \"{}\"", entity.getType());
-            cameraEntityId = -1;
+        if (cameraActive || cameraEntity == null) {
             return;
         }
 
         cameraActive = true;
-        cameraEntity = (TownBuilderCameraEntity) entity;
         minecraft.setRenderViewEntity(cameraEntity);
         oldThirdPersonView = minecraft.gameSettings.thirdPersonView;
         minecraft.gameSettings.thirdPersonView = 1;
@@ -100,7 +84,6 @@ public class TownBuilderScreen extends Screen implements IHasContainer<TownBuild
 
     private void disableCamera() {
         cameraActive = false;
-        cameraEntityId = -1;
         cameraEntity = null;
         ShaderHelper.clearDepthTextureFramebuffer();
         if (minecraft != null) {

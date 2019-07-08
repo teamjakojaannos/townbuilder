@@ -2,10 +2,12 @@ package jakojaannos.townbuilder.client.entity;
 
 import jakojaannos.townbuilder.client.util.CameraMovementInput;
 import jakojaannos.townbuilder.entity.TownBuilderCameraEntity;
+import jakojaannos.townbuilder.tileentity.TownBuilderTileEntity;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -15,18 +17,20 @@ import javax.annotation.Nullable;
 @Log4j2
 @OnlyIn(Dist.CLIENT)
 public class ClientTownBuilderCameraEntity extends TownBuilderCameraEntity {
-    private boolean local;
     @Nullable private CameraMovementInput movementInput;
 
-    public ClientTownBuilderCameraEntity(World world) {
-        super(world);
-    }
+    public ClientTownBuilderCameraEntity(
+            World world,
+            PlayerEntity owner,
+            TownBuilderTileEntity townTileEntity,
+            BlockPos origin,
+            CameraFacing facing,
+            float cameraHeight,
+            float cameraOffset
+    ) {
+        super(world, owner, townTileEntity, origin, facing, cameraHeight, cameraOffset);
 
-    @Override
-    public void readSpawnData(PacketBuffer additionalData) {
-        super.readSpawnData(additionalData);
-        this.local = owner.getUniqueID().equals(Minecraft.getInstance().player.getUniqueID());
-        if (local) {
+        if (owner.getUniqueID().equals(Minecraft.getInstance().player.getUniqueID())) {
             this.movementInput = new CameraMovementInput();
         }
     }
@@ -35,7 +39,7 @@ public class ClientTownBuilderCameraEntity extends TownBuilderCameraEntity {
     public void tick() {
         super.tick();
 
-        if (movementInput != null && local) {
+        if (movementInput != null) {
             updateMovement();
         }
     }
@@ -48,19 +52,23 @@ public class ClientTownBuilderCameraEntity extends TownBuilderCameraEntity {
         movementInput.tick();
 
         if (movementInput.isRotateLeft()) {
-            rotateCCW();
+            rotate();
         }
 
         if (movementInput.isRotateRight()) {
-            rotate();
+            rotateCCW();
         }
 
         if (movementInput.wantsMove()) {
             val xRaw = movementInput.getInputHorizontal();
             val zRaw = movementInput.getInputVertical();
 
-            val x = Math.cos(rotationYaw) * xRaw;
-            val z = Math.sin(rotationYaw) * zRaw;
+            val cos = Math.cos(Math.toRadians(rotationYaw));
+            val sin = Math.sin(Math.toRadians(rotationYaw));
+
+            // TODO: Something fishy with these
+            val x = xRaw * cos + zRaw * sin;
+            val z = xRaw * sin - zRaw * cos;
 
             setMotion(x, 0.0, z);
             setPosition(posX + x, posY, posZ + z);

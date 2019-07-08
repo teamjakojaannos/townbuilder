@@ -3,6 +3,8 @@ package jakojaannos.townbuilder;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.IPacket;
+import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
@@ -26,5 +28,9 @@ public class ModServerNetworkManager {
 
     public void sendTo(ServerPlayerEntity playerEntity, Object message) {
         sendTo(PacketDistributor.PLAYER.with(() -> playerEntity), message);
+    }
+
+    public <MSG> IPacket<?> asPacket(MSG message) {
+        return channel.toVanillaPacket(message, NetworkDirection.PLAY_TO_CLIENT);
     }
 }
