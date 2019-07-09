@@ -1,10 +1,13 @@
 package jakojaannos.townbuilder.client.entity;
 
+import jakojaannos.townbuilder.Network;
 import jakojaannos.townbuilder.client.util.CameraMovementInput;
 import jakojaannos.townbuilder.entity.TownBuilderCameraEntity;
+import jakojaannos.townbuilder.network.messages.CameraMessages;
 import jakojaannos.townbuilder.tileentity.TownBuilderTileEntity;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
+import lombok.var;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -52,12 +55,22 @@ public class ClientTownBuilderCameraEntity extends TownBuilderCameraEntity {
 
         movementInput.tick();
 
+        var rotated = false;
         if (movementInput.isRotateLeft()) {
             rotate();
+            rotated = true;
         }
 
         if (movementInput.isRotateRight()) {
             rotateCCW();
+            rotated = true;
+        }
+
+        if (rotated) {
+            Network.getClient().sendToServer(CameraMessages.UpdateFacing.builder()
+                                                                        .entityId(getEntityId())
+                                                                        .facingIndex(facing.facingIndex())
+                                                                        .build());
         }
 
         if (movementInput.wantsMove()) {
@@ -69,10 +82,12 @@ public class ClientTownBuilderCameraEntity extends TownBuilderCameraEntity {
             val x = xRaw * sin + zRaw * cos;
             val z = xRaw * cos - zRaw * sin;
 
-            setMotion(x, 0.0, z);
-            setPosition(posX + x, posY, posZ + z);
-        } else {
-            setMotion(0.0, 0.0, 0.0);
+            origin = origin.add(x, 0.0, z);
+            facing.applyOffsets(this, origin, cameraOffset, cameraHeight);
+            Network.getClient().sendToServer(CameraMessages.UpdateOrigin.builder()
+                                                                        .entityId(getEntityId())
+                                                                        .pos(getPositionVec())
+                                                                        .build());
         }
     }
 }

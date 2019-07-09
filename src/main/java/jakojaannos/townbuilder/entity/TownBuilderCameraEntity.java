@@ -1,7 +1,7 @@
 package jakojaannos.townbuilder.entity;
 
 import jakojaannos.townbuilder.Network;
-import jakojaannos.townbuilder.network.SpawnTownBuilderCameraMessage;
+import jakojaannos.townbuilder.network.messages.CameraMessages;
 import jakojaannos.townbuilder.tileentity.TownBuilderTileEntity;
 import lombok.val;
 import net.minecraft.entity.Entity;
@@ -10,16 +10,17 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.IPacket;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class TownBuilderCameraEntity extends Entity {
     private PlayerEntity owner;
     private TownBuilderTileEntity townTileEntity;
-    private BlockPos origin;
-    private float cameraHeight;
-    private float cameraOffset;
+    protected Vec3d origin;
+    protected float cameraHeight;
+    protected float cameraOffset;
 
-    private CameraFacing facing;
+    protected CameraFacing facing;
 
     public TownBuilderCameraEntity(
             World world,
@@ -34,11 +35,11 @@ public class TownBuilderCameraEntity extends Entity {
         this.rotationPitch = 45.0f;
         this.owner = owner;
         this.townTileEntity = townTileEntity;
-        this.origin = origin;
+        this.origin = new Vec3d(origin);
         this.cameraHeight = cameraHeight;
         this.cameraOffset = cameraOffset;
         this.facing = facing;
-        facing.applyOffsets(this, origin, cameraOffset, cameraHeight);
+        facing.applyOffsets(this, this.origin, cameraOffset, cameraHeight);
     }
 
     public void rotateCCW() {
@@ -65,16 +66,25 @@ public class TownBuilderCameraEntity extends Entity {
 
     @Override
     public IPacket<?> createSpawnPacket() {
-        val spawnMessage = SpawnTownBuilderCameraMessage.builder()
-                                                        .entityId(getEntityId())
-                                                        .uuid(getUniqueID())
-                                                        .owner(owner.getUniqueID())
-                                                        .origin(origin)
-                                                        .yaw(rotationYaw)
-                                                        .offset(cameraOffset)
-                                                        .height(cameraHeight)
-                                                        .build();
+        val spawnMessage = CameraMessages.Spawn.builder()
+                                               .entityId(getEntityId())
+                                               .uuid(getUniqueID())
+                                               .owner(owner.getUniqueID())
+                                               .origin(new BlockPos(origin))
+                                               .yaw(rotationYaw)
+                                               .offset(cameraOffset)
+                                               .height(cameraHeight)
+                                               .build();
         return Network.getServer().asPacket(spawnMessage);
+    }
+
+    public void updateOrigin(Vec3d origin) {
+        this.origin = origin;
+    }
+
+    public void updateFacing(CameraFacing facing) {
+        this.facing = facing;
+        this.facing.applyOffsets(this, origin, cameraOffset, cameraHeight);
     }
 
     public enum CameraFacing {
@@ -106,7 +116,16 @@ public class TownBuilderCameraEntity extends Entity {
             }
         }
 
-        public void applyOffsets(Entity entity, BlockPos origin, float offset, float height) {
+        public static CameraFacing fromIndex(int facingIndex) {
+            if (facingIndex < 0 || facingIndex >= values().length) {
+                LOGGER.error("Facing index out of bounds: {}", facingIndex);
+                return SOUTH_WEST;
+            }
+
+            return values()[facingIndex];
+        }
+
+        public void applyOffsets(Entity entity, Vec3d origin, float offset, float height) {
             entity.rotationYaw = yaw;
             entity.posX = origin.getX() + xOffset * offset;
             entity.posY = origin.getY() + height;
@@ -119,6 +138,10 @@ public class TownBuilderCameraEntity extends Entity {
 
         public CameraFacing rotateCCW() {
             return ordinal() == 0 ? SOUTH_EAST : values()[ordinal() - 1];
+        }
+
+        public int facingIndex() {
+            return ordinal();
         }
     }
 }

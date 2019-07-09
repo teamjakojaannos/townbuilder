@@ -4,10 +4,10 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
 import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -28,8 +28,9 @@ public class MessageAdapter<TMessage, TBuilder> {
                     ctxSupplier.get().getDirection());
         ctxSupplier.get().setPacketHandled(true);
     };
-    @Nullable private BiConsumer<TMessage, Supplier<NetworkEvent.Context>> clientHandler;
-    @Nullable private BiConsumer<TMessage, Supplier<NetworkEvent.Context>> serverHandler;
+    private boolean canBeSentToClient = false;
+    private boolean canBeSentToServer = false;
+    private IMessageHandler<TMessage> messageHandler;
 
     /**
      * Creates a new message adapter.
@@ -83,29 +84,102 @@ public class MessageAdapter<TMessage, TBuilder> {
         return this;
     }
 
-    public MessageAdapter<TMessage, TBuilder> withClientsideHandler(
-            BiConsumer<TMessage, Supplier<NetworkEvent.Context>> handler
-    ) {
-        this.clientHandler = handler;
+    /**
+     * Adds a {@link IMessageHandler} to this adapter. Note that adapter is treated either as {@link
+     * IMessageHandler.Client} or {@link IMessageHandler.Server} depending on what is passed into {@link
+     * #withDirection(NetworkDirection)}
+     *
+     * @param messageHandler message handler to apply
+     * @return self for method chaining
+     */
+    public MessageAdapter<TMessage, TBuilder> withHandler(IMessageHandler<TMessage> messageHandler) {
+        this.messageHandler = messageHandler;
         return this;
     }
 
-    public MessageAdapter<TMessage, TBuilder> withServersideHandler(
-            BiConsumer<TMessage, Supplier<NetworkEvent.Context>> handler
-    ) {
-        this.serverHandler = handler;
+    /**
+     * Convenience method for constructing a new handler inline.
+     *
+     * @param supplier supplier for creating a new handler
+     * @return self for method chaining
+     * @see #withHandler(IMessageHandler)
+     */
+    public MessageAdapter<TMessage, TBuilder> withHandler(Supplier<IMessageHandler<TMessage>> supplier) {
+        this.messageHandler = supplier.get();
         return this;
     }
+
+    /**
+     * Sets which direction this message can be sent to. Note that if a direction is set, handler passed in via {@link
+     * #withHandler(IMessageHandler)} is expected to implement handler for that direction.
+     *
+     * @param direction direction message can be sent
+     * @return self for method chaining
+     */
+    public MessageAdapter<TMessage, TBuilder> withDirection(NetworkDirection direction) {
+        if (direction == NetworkDirection.PLAY_TO_CLIENT) {
+            this.canBeSentToClient = true;
+        }
+        if (direction == NetworkDirection.PLAY_TO_SERVER) {
+            this.canBeSentToServer = true;
+        }
+        return this;
+    }
+
+    /**
+     * Shorthand for calling {@link #withDirection(NetworkDirection) withDirection(NetworkDirection.PLAY_TO_CLIENT)} and
+     * {@link #withHandler(IMessageHandler)}
+     *
+     * @param messageHandler message handler to apply
+     * @return self for method chaining
+     */
+    public MessageAdapter<TMessage, TBuilder> withClientsideHandler(IMessageHandler<TMessage> messageHandler) {
+        return withDirection(NetworkDirection.PLAY_TO_CLIENT).withHandler(messageHandler);
+    }
+
+    /**
+     * Shorthand for calling {@link #withDirection(NetworkDirection) withDirection(NetworkDirection.PLAY_TO_CLIENT)} and
+     * {@link #withHandler(IMessageHandler)}. Convenience overload for creating a new handler inline.
+     *
+     * @param supplier supplier for crating a new message handler
+     * @return self for method chaining
+     */
+    public MessageAdapter<TMessage, TBuilder> withClientsideHandler(Supplier<IMessageHandler<TMessage>> supplier) {
+        return withDirection(NetworkDirection.PLAY_TO_CLIENT).withHandler(supplier);
+    }
+
+    /**
+     * Shorthand for calling {@link #withDirection(NetworkDirection) withDirection(NetworkDirection.PLAY_TO_SERVER)} and
+     * {@link #withHandler(IMessageHandler)}
+     *
+     * @param messageHandler message handler to apply
+     * @return self for method chaining
+     */
+    public MessageAdapter<TMessage, TBuilder> withServersideHandler(IMessageHandler<TMessage> messageHandler) {
+        return withDirection(NetworkDirection.PLAY_TO_SERVER).withHandler(messageHandler);
+    }
+
+    /**
+     * Shorthand for calling {@link #withDirection(NetworkDirection) withDirection(NetworkDirection.PLAY_TO_SERVER)} and
+     * {@link #withHandler(IMessageHandler)}. Convenience overload for creating a new handler inline.
+     *
+     * @param supplier supplier for crating a new message handler
+     * @return self for method chaining
+     */
+    public MessageAdapter<TMessage, TBuilder> withServersideHandler(Supplier<IMessageHandler<TMessage>> supplier) {
+        return withDirection(NetworkDirection.PLAY_TO_SERVER).withHandler(supplier);
+    }
+
 
     public void setClientside() {
-        if (clientHandler != null) {
-            handler = clientHandler;
+        if (canBeSentToClient && messageHandler != null) {
+            handler = messageHandler::handleClientside;
         }
     }
 
     public void setServerside() {
-        if (serverHandler != null) {
-            handler = serverHandler;
+        if (canBeSentToServer && messageHandler != null) {
+            handler = messageHandler::handleServerside;
         }
     }
 

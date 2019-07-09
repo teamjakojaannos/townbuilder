@@ -3,7 +3,7 @@ package jakojaannos.townbuilder;
 import jakojaannos.townbuilder.client.ModClientNetworkManager;
 import jakojaannos.townbuilder.network.MessageAdapter;
 import jakojaannos.townbuilder.network.MessageField;
-import jakojaannos.townbuilder.network.SpawnTownBuilderCameraMessage;
+import jakojaannos.townbuilder.network.messages.CameraMessages;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -37,22 +37,37 @@ public class Network {
     }
 
     static void registerMessages() {
-        register(new MessageAdapter<>(SpawnTownBuilderCameraMessage::builder, SpawnTownBuilderCameraMessage.Builder::build)
-                         .withField(MessageField.ofInteger(SpawnTownBuilderCameraMessage::getEntityId,
-                                                           SpawnTownBuilderCameraMessage.Builder::entityId))
-                         .withField(MessageField.ofUUID(SpawnTownBuilderCameraMessage::getUuid,
-                                                        SpawnTownBuilderCameraMessage.Builder::uuid))
-                         .withField(MessageField.ofUUID(SpawnTownBuilderCameraMessage::getOwner,
-                                                        SpawnTownBuilderCameraMessage.Builder::owner))
-                         .withField(MessageField.ofBlockPos(SpawnTownBuilderCameraMessage::getOrigin,
-                                                            SpawnTownBuilderCameraMessage.Builder::origin))
-                         .withField(MessageField.ofFloat(SpawnTownBuilderCameraMessage::getYaw,
-                                                         SpawnTownBuilderCameraMessage.Builder::yaw))
-                         .withField(MessageField.ofFloat(SpawnTownBuilderCameraMessage::getOffset,
-                                                         SpawnTownBuilderCameraMessage.Builder::offset))
-                         .withField(MessageField.ofFloat(SpawnTownBuilderCameraMessage::getHeight,
-                                                         SpawnTownBuilderCameraMessage.Builder::height))
-                         .withClientsideHandler(SpawnTownBuilderCameraMessage::handleClientside));
+        register(new MessageAdapter<>(CameraMessages.Spawn::builder, CameraMessages.Spawn.Builder::build)
+                         .withField(MessageField.ofInteger(CameraMessages.Spawn::getEntityId,
+                                                           CameraMessages.Spawn.Builder::entityId))
+                         .withField(MessageField.ofUUID(CameraMessages.Spawn::getUuid,
+                                                        CameraMessages.Spawn.Builder::uuid))
+                         .withField(MessageField.ofUUID(CameraMessages.Spawn::getOwner,
+                                                        CameraMessages.Spawn.Builder::owner))
+                         .withField(MessageField.ofBlockPos(CameraMessages.Spawn::getOrigin,
+                                                            CameraMessages.Spawn.Builder::origin))
+                         .withField(MessageField.ofFloat(CameraMessages.Spawn::getYaw,
+                                                         CameraMessages.Spawn.Builder::yaw))
+                         .withField(MessageField.ofFloat(CameraMessages.Spawn::getOffset,
+                                                         CameraMessages.Spawn.Builder::offset))
+                         .withField(MessageField.ofFloat(CameraMessages.Spawn::getHeight,
+                                                         CameraMessages.Spawn.Builder::height))
+                         .withClientsideHandler(CameraMessages.Spawn.Handler::new)
+        );
+        register(new MessageAdapter<>(CameraMessages.UpdateOrigin::builder, CameraMessages.UpdateOrigin.Builder::build)
+                         .withField(MessageField.ofInteger(CameraMessages.UpdateOrigin::getEntityId,
+                                                           CameraMessages.UpdateOrigin.Builder::entityId))
+                         .withField(MessageField.ofVec3d(CameraMessages.UpdateOrigin::getPos,
+                                                         CameraMessages.UpdateOrigin.Builder::pos))
+                         .withServersideHandler(CameraMessages.UpdateOrigin.Handler::new)
+        );
+        register(new MessageAdapter<>(CameraMessages.UpdateFacing::builder, CameraMessages.UpdateFacing.Builder::build)
+                         .withField(MessageField.ofInteger(CameraMessages.UpdateFacing::getEntityId,
+                                                           CameraMessages.UpdateFacing.Builder::entityId))
+                         .withField(MessageField.ofInteger(CameraMessages.UpdateFacing::getFacingIndex,
+                                                           CameraMessages.UpdateFacing.Builder::facingIndex))
+                         .withServersideHandler(CameraMessages.UpdateFacing.Handler::new)
+        );
     }
 
     static void activateServerHandlers() {
