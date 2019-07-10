@@ -1,11 +1,18 @@
 #version 120
 
+// Grid
+#define LINE_WIDTH 1.5
+#define CELL_COLUMNS 10
+
+// Posterization
 #define GAMMA 0.3
 #define REGIONS 8.0
 
 uniform sampler2D DiffuseSampler;
 uniform sampler2D DepthSampler;
 
+uniform vec2 InSize;
+uniform vec3 CamPos;
 uniform float zNear;
 uniform float zFar;
 
@@ -27,10 +34,12 @@ float depthSample(vec2 u) {
     return texture2D(DepthSampler, u).x;
 }
 
-void main() {
-    vec4 texColor = texture2D(DiffuseSampler, texCoord);
-    vec4 posterized = vec4(posterize(texColor.rgb), 1.0);
+float grid(vec2 coord, float resolution) {
+    vec2 grid = fract(coord * resolution);
+    return step(resolution, grid.x) * step(resolution, grid.y);
+}
 
+void main() {
     float center = depthSample(texCoord);
     float up     = depthSample(texCoord + vec2(0.0, -oneTexel.y));
     float down   = depthSample(texCoord + vec2(oneTexel.x, 0.0));
@@ -48,11 +57,23 @@ void main() {
     } else if (edgeStrength > 0.01) {
         gl_FragColor = vec4(vec3(0.35), 1.0);
     } else {
+        vec4 texColor = texture2D(DiffuseSampler, texCoord);
+        vec4 posterized = vec4(posterize(texColor.rgb), 1.0);
         float val = max(max(posterized.r, posterized.g), posterized.b);
         gl_FragColor = vec4(posterized.r * 0.15,
                             posterized.g * 0.15,
                             clamp(posterized.b * 2.0 + val, 0.15, 0.85),
                             1.0);
+    }
+
+    float gridScaledWidth = InSize.x / LINE_WIDTH;
+    float gridResolution = 1.0 / gridScaledWidth * CELL_COLUMNS;
+    float ratio = InSize.y / InSize.x;
+    float gridValue = grid(vec2(texCoord.x + CamPos.x, texCoord.y * ratio + CamPos.z) * gridScaledWidth, gridResolution);
+    if (gridValue == 0.0) {
+        float value = max(max(gl_FragColor.x, gl_FragColor.y), gl_FragColor.z);
+        float lightened = clamp(value * 1.0, 0.0, 1.0);
+        gl_FragColor = vec4(vec3(0.65), 1.0);
     }
 }
 
