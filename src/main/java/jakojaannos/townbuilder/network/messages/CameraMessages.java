@@ -95,8 +95,7 @@ public class CameraMessages {
                     Supplier<NetworkEvent.Context> contextSupplier
             ) {
                 contextSupplier.get().enqueueWork(() -> {
-                    Optional<TownBuilderCameraEntity> camera = getCameraFromEntityId(message.entityId,
-                                                                                     contextSupplier.get());
+                    val camera = getCameraFromEntityId(message.entityId, contextSupplier.get());
                     camera.ifPresent(cam -> cam.updateOrigin(message.pos));
                 });
                 contextSupplier.get().setPacketHandled(true);
@@ -118,8 +117,7 @@ public class CameraMessages {
                     Supplier<NetworkEvent.Context> contextSupplier
             ) {
                 contextSupplier.get().enqueueWork(() -> {
-                    Optional<TownBuilderCameraEntity> camera = getCameraFromEntityId(message.entityId,
-                                                                                     contextSupplier.get());
+                    val camera = getCameraFromEntityId(message.entityId, contextSupplier.get());
                     camera.ifPresent(cam -> cam.updateFacing(TownBuilderCameraEntity.CameraFacing.fromIndex(message.facingIndex)));
                 });
                 contextSupplier.get().setPacketHandled(true);
@@ -127,7 +125,7 @@ public class CameraMessages {
         }
     }
 
-    private static <TCamera extends TownBuilderCameraEntity> Optional<TCamera> getCameraFromEntityId(
+    private static Optional<TownBuilderCameraEntity> getCameraFromEntityId(
             int entityId,
             NetworkEvent.Context context
     ) {
@@ -144,6 +142,6 @@ public class CameraMessages {
             return Optional.empty();
         }
 
-        return Optional.of((TCamera) targetEntity);
+        return Optional.of((TownBuilderCameraEntity) targetEntity);
     }
 }
