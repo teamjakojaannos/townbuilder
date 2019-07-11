@@ -1,26 +1,28 @@
 package jakojaannos.townbuilder.client.gui.screen.inventory;
 
+import jakojaannos.townbuilder.block.ModBlocks;
 import jakojaannos.townbuilder.client.ShaderHelper;
 import jakojaannos.townbuilder.client.entity.ClientTownBuilderCameraEntity;
-import jakojaannos.townbuilder.entity.TownBuilderCameraEntity;
 import jakojaannos.townbuilder.inventory.container.TownBuilderContainer;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
 import net.minecraft.client.gui.IHasContainer;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.client.util.InputMappings;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 @Log4j2
 @OnlyIn(Dist.CLIENT)
 public class TownBuilderScreen extends Screen implements IHasContainer<TownBuilderContainer> {
+    private static final double BUILDER_RAY_LENGTH = 255.0;
+
     private static ClientTownBuilderCameraEntity cameraEntity;
     private int oldThirdPersonView = 0;
 
@@ -61,6 +63,30 @@ public class TownBuilderScreen extends Screen implements IHasContainer<TownBuild
             this.container.onContainerClosed(this.minecraft.player);
         }
         disableCamera();
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button != 0) {
+            return true;
+        }
+
+        val startPoint = cameraEntity.getPositionVector();
+        val endPoint = startPoint.add(cameraEntity.getForward().scale(BUILDER_RAY_LENGTH));
+        RayTraceContext context = new RayTraceContext(startPoint,
+                                                      endPoint,
+                                                      RayTraceContext.BlockMode.COLLIDER,
+                                                      RayTraceContext.FluidMode.NONE,
+                                                      cameraEntity);
+
+        val world = cameraEntity.world;
+        val traceResult = world.rayTraceBlocks(context);
+        if (traceResult.getType() != RayTraceResult.Type.MISS) {
+            val pos = traceResult.getPos();
+            world.setBlockState(pos.up(), ModBlocks.MYTESTBLOCK.getDefaultState());
+        }
+
+        return true;
     }
 
     private void activateCamera() {
