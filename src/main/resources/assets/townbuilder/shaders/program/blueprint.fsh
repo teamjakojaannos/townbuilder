@@ -1,7 +1,7 @@
 #version 120
 
 // Grid
-#define LINE_WIDTH 1.5
+#define LINE_WIDTH 5
 #define CELL_COLUMNS 10
 
 // Posterization
@@ -79,8 +79,10 @@ void main() {
 
     float camPitch = CamRot.y;
     float camYaw = CamRot.y;
-    float camX = CamPos.x;
-    float camZ = CamPos.z;
+    float cy = cos(radians(camYaw + 90.0));
+    float sy = sin(radians(camYaw + 90.0));
+    float camX = CamPos.x * sy - CamPos.z * cy;
+    float camZ = CamPos.x * cy + CamPos.z * sy;
     vec2 worldCoord = vec2(-camX, camZ);
 
     float cellWidth = screenWidthInWorld / CELL_COLUMNS;

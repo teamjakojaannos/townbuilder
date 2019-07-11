@@ -98,7 +98,7 @@ public class TownBuilderCameraEntity extends Entity {
         private final float zOffset;
 
         CameraFacing(float yaw, float xOffset, float zOffset) {
-            this.yaw = 0.0f;//yaw;
+            this.yaw = yaw;
             this.xOffset = xOffset;
             this.zOffset = zOffset;
         }
