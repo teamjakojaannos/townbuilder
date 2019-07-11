@@ -13,6 +13,7 @@ uniform sampler2D DepthSampler;
 
 uniform vec2 InSize;
 uniform vec3 CamPos;
+uniform vec2 CamRot;
 uniform float zNear;
 uniform float zFar;
 
@@ -61,19 +62,33 @@ void main() {
         vec4 posterized = vec4(posterize(texColor.rgb), 1.0);
         float val = max(max(posterized.r, posterized.g), posterized.b);
         gl_FragColor = vec4(posterized.r * 0.15,
-                            posterized.g * 0.15,
-                            clamp(posterized.b * 2.0 + val, 0.15, 0.85),
-                            1.0);
+        posterized.g * 0.15,
+        clamp(posterized.b * 2.0 + val, 0.15, 0.85),
+        1.0);
     }
 
     float gridScaledWidth = InSize.x / LINE_WIDTH;
     float gridResolution = 1.0 / gridScaledWidth * CELL_COLUMNS;
     float ratio = InSize.y / InSize.x;
-    float gridValue = grid(vec2(texCoord.x + CamPos.x, texCoord.y * ratio + CamPos.z) * gridScaledWidth, gridResolution);
+
+    float camPitch = CamRot.y;
+    float camYaw = CamRot.y;
+    float camX = CamPos.x;
+    float camZ = CamPos.z;
+    float sy = sin(radians(camYaw));
+    float cy = cos(radians(camYaw));
+    float cp = cos(radians((90.0 - camPitch))) * 4.5;
+    float x = camX * sy * cp + camZ * cy * cp;
+    float z = camX * cy * cp - camZ * sy * cp;
+    float xx = x * cp;
+    float zz = z * cp;
+    // TODO: Figure out how to scale offsets according to screen size (4.5 above is just a magic number which happens to be close to correct with certain screen sizes)
+    vec2 worldCoord = vec2(xx, zz * (1.0 - ratio));
+
+    float gridValue = grid(vec2(texCoord.x, texCoord.y * ratio) * gridScaledWidth - worldCoord, gridResolution);
     if (gridValue == 0.0) {
         float value = max(max(gl_FragColor.x, gl_FragColor.y), gl_FragColor.z);
         float lightened = clamp(value * 1.0, 0.0, 1.0);
         gl_FragColor = vec4(vec3(0.65), 1.0);
     }
 }
-

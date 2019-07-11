@@ -3,8 +3,12 @@ package jakojaannos.townbuilder.client;
 import com.mojang.blaze3d.platform.GlStateManager;
 import lombok.val;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.Matrix4f;
+import net.minecraft.client.renderer.Quaternion;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.client.shader.Shader;
+import net.minecraft.client.shader.ShaderInstance;
+import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
@@ -15,6 +19,7 @@ import org.lwjgl.opengl.GL11;
 @OnlyIn(Dist.CLIENT)
 public class ShaderHelper {
     private static final String CAMERA_POSITION_UNIFORM_NAME = "CamPos";
+    private static final String CAMERA_ROTATION_UNIFORM_NAME = "CamRot";
     private static Framebuffer depthFramebuffer;
     private static int renderDistance = 2;
 
@@ -46,10 +51,13 @@ public class ShaderHelper {
             blitDepthBuffer();
         }
 
-        // Always try to pass uniforms. Implementation uses override which returns dummy (ShaderDefault) for undefined
-        // uniform variables so usually this just results to bunch of calls to NOOP functions unless shaders actually
-        // use custom values.
-        passCustomUniforms();
+        Minecraft.getInstance()
+                .gameRenderer
+                .getShaderGroup()
+                .listShaders
+                .stream()
+                .map(Shader::func_217624_b) // get underlying ShaderInstances
+                .forEach(shaderInstance -> applyUniformsToInstance(shaderInstance, event.getPartialTicks()));
     }
 
     private static void blitDepthBuffer() {
@@ -72,22 +80,19 @@ public class ShaderHelper {
         GlStateManager.bindTexture(0);
     }
 
-    private static void passCustomUniforms() {
+    private static void applyUniformsToInstance(ShaderInstance shaderInstance, float partialTicks) {
         val renderViewEntity = Minecraft.getInstance().renderViewEntity;
         val cameraEntity = renderViewEntity == null
                 ? Minecraft.getInstance().player
                 : renderViewEntity;
 
-        Minecraft.getInstance()
-                .gameRenderer
-                .getShaderGroup()
-                .listShaders
-                .stream()
-                // get instances from shaders
-                .map(Shader::func_217624_b)
-                // get camera uniform (or ShaderDefault if undefined in shader)
-                .map(shaderInstance -> shaderInstance.func_216538_b(CAMERA_POSITION_UNIFORM_NAME))
-                .forEach(uniform -> uniform.set((float) cameraEntity.posX, (float) cameraEntity.posY, (float) cameraEntity.posZ));
+        val camX = MathHelper.lerp(partialTicks, cameraEntity.lastTickPosX, cameraEntity.posX);
+        val camY = MathHelper.lerp(partialTicks, cameraEntity.lastTickPosY, cameraEntity.posY);
+        val camZ = MathHelper.lerp(partialTicks, cameraEntity.lastTickPosZ, cameraEntity.posZ);
+
+        shaderInstance.func_216538_b(CAMERA_POSITION_UNIFORM_NAME).set((float) camX, (float) camY, (float) camZ);
+        shaderInstance.func_216538_b(CAMERA_ROTATION_UNIFORM_NAME).set(cameraEntity.rotationPitch, cameraEntity.rotationYaw);
+
     }
 
     // FIXME: CameraSetupEvent is not yet run on 1.14, RenderFog is as close as we can get
@@ -104,8 +109,8 @@ public class ShaderHelper {
         }
 
         val mc = Minecraft.getInstance();
-        val screenWidth = (float) mc.mainWindow.getScaledWidth();
-        val screenHeight = (float) mc.mainWindow.getScaledHeight();
+        val screenWidth = (float) mc.mainWindow.getFramebufferWidth();
+        val screenHeight = (float) mc.mainWindow.getFramebufferHeight();
         val aspectRatio = screenWidth / screenHeight;
 
         val height = renderDistance * 16;
