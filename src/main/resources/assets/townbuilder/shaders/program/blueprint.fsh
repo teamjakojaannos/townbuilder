@@ -67,25 +67,21 @@ void main() {
         1.0);
     }
 
+    float ratio = InSize.x / InSize.y;
+    float screenHeightInWorld = 32.0;
+    float screenWidthInWorld = ratio * screenHeightInWorld;
+
     float gridScaledWidth = InSize.x / LINE_WIDTH;
     float gridResolution = 1.0 / gridScaledWidth * CELL_COLUMNS;
-    float ratio = InSize.y / InSize.x;
+    vec2 screenCoord = vec2(texCoord.x, texCoord.y);
 
     float camPitch = CamRot.y;
     float camYaw = CamRot.y;
     float camX = CamPos.x;
     float camZ = CamPos.z;
-    float sy = sin(radians(camYaw));
-    float cy = cos(radians(camYaw));
-    float cp = cos(radians((90.0 - camPitch))) * 4.5;
-    float x = camX * sy * cp + camZ * cy * cp;
-    float z = camX * cy * cp - camZ * sy * cp;
-    float xx = x * cp;
-    float zz = z * cp;
-    // TODO: Figure out how to scale offsets according to screen size (4.5 above is just a magic number which happens to be close to correct with certain screen sizes)
-    vec2 worldCoord = vec2(xx, zz * (1.0 - ratio));
+    vec2 worldCoord = vec2(-camX / screenWidthInWorld, camZ / screenHeightInWorld);
 
-    float gridValue = grid(vec2(texCoord.x, texCoord.y * ratio) * gridScaledWidth - worldCoord, gridResolution);
+    float gridValue = grid(screenCoord + worldCoord, 0.25);
     if (gridValue == 0.0) {
         float value = max(max(gl_FragColor.x, gl_FragColor.y), gl_FragColor.z);
         float lightened = clamp(value * 1.0, 0.0, 1.0);
