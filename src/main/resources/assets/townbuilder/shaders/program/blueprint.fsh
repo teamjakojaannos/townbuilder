@@ -70,19 +70,25 @@ void main() {
     float ratio = InSize.x / InSize.y;
     float screenHeightInWorld = 32.0;
     float screenWidthInWorld = ratio * screenHeightInWorld;
+    float pixelWidthInWorld = screenWidthInWorld / InSize.x;
+    float pixelHeightInWorld = screenHeightInWorld / InSize.y;
 
     float gridScaledWidth = InSize.x / LINE_WIDTH;
     float gridResolution = 1.0 / gridScaledWidth * CELL_COLUMNS;
-    vec2 screenCoord = vec2(texCoord.x, texCoord.y);
+    vec2 screenCoord = vec2(texCoord.x * screenWidthInWorld, texCoord.y * screenHeightInWorld);
 
     float camPitch = CamRot.y;
     float camYaw = CamRot.y;
     float camX = CamPos.x;
     float camZ = CamPos.z;
-    vec2 worldCoord = vec2(-camX / screenWidthInWorld, camZ / screenHeightInWorld);
+    vec2 worldCoord = vec2(-camX, camZ);
 
-    float gridValue = grid(screenCoord + worldCoord, 0.25);
-    if (gridValue == 0.0) {
+    float cellWidth = screenWidthInWorld / CELL_COLUMNS;
+    float cellHeight = cellWidth;
+    float gridValueX = fract((screenCoord + worldCoord).x / cellWidth);
+    float gridValueY = fract((screenCoord + worldCoord).y / cellHeight);
+    float gridThreshold = (pixelWidthInWorld * LINE_WIDTH) / CELL_COLUMNS;
+    if (gridValueX < gridThreshold || gridValueY < gridThreshold) {
         float value = max(max(gl_FragColor.x, gl_FragColor.y), gl_FragColor.z);
         float lightened = clamp(value * 1.0, 0.0, 1.0);
         gl_FragColor = vec4(vec3(0.65), 1.0);
