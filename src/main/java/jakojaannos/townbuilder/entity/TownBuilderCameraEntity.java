@@ -32,7 +32,7 @@ public class TownBuilderCameraEntity extends Entity {
             float cameraOffset
     ) {
         super(ModEntityTypes.TOWN_BUILDER_CAMERA, world);
-        this.rotationPitch = 90.0f;
+        this.rotationPitch = 45.0f;
         this.owner = owner;
         this.townTileEntity = townTileEntity;
         this.origin = new Vec3d(origin);

@@ -83,7 +83,8 @@ void main() {
     float sy = sin(radians(camYaw + 90.0));
     float camX = CamPos.x * sy - CamPos.z * cy;
     float camZ = CamPos.x * cy + CamPos.z * sy;
-    vec2 worldCoord = vec2(-camX, camZ);
+    float camZAfterPitch = camZ * cos(radians(360.0 - (90.0 + camPitch)));
+    vec2 worldCoord = vec2(-camX, camZAfterPitch);
 
     float cellWidth = screenWidthInWorld / CELL_COLUMNS;
     float cellHeight = cellWidth;
