@@ -7,6 +7,7 @@ import jakojaannos.townbuilder.inventory.container.TownBuilderContainer;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IHasContainer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.settings.KeyBinding;
@@ -71,7 +72,25 @@ public class TownBuilderScreen extends Screen implements IHasContainer<TownBuild
             return true;
         }
 
-        val startPoint = cameraEntity.getPositionVector();
+        val mainWindow = Minecraft.getInstance().mainWindow;
+        double windowWidth = mainWindow.getScaledWidth();
+        double windowHeight = mainWindow.getScaledHeight();
+
+        val screenRatio = windowWidth / windowHeight;
+        val screenHeightInWorld = 2 * 16.0;
+        val screenWidthInWorld = screenRatio * screenHeightInWorld;
+
+        val normalizedMouseX = (mouseX / windowWidth) - 0.5;
+        val normalizedMouseY = (mouseY / windowHeight) - 0.5;
+        val mouseXInWorld = normalizedMouseX * screenWidthInWorld;
+        val mouseYInWorld = normalizedMouseY * screenHeightInWorld;
+
+        val upVector = Vec3d.fromPitchYaw(cameraEntity.rotationPitch - 90.0f, cameraEntity.rotationYaw);
+        val rightVector = Vec3d.fromPitchYaw(0.0f, cameraEntity.rotationYaw - 90.0f);
+
+        val startPoint = cameraEntity.getPositionVector()
+                                     .add(upVector.scale(-mouseYInWorld))
+                                     .add(rightVector.scale(-mouseXInWorld));
         val endPoint = startPoint.add(cameraEntity.getForward().scale(BUILDER_RAY_LENGTH));
         RayTraceContext context = new RayTraceContext(startPoint,
                                                       endPoint,
