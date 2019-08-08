@@ -89,5 +89,8 @@ public class ClientTownBuilderCameraEntity extends TownBuilderCameraEntity {
                                                                         .pos(getPositionVec())
                                                                         .build());
         }
+
+        // FIXME: Lie about server-approved location to prevent snapping
+        func_213312_b(posX, posY, posZ);
     }
 }
