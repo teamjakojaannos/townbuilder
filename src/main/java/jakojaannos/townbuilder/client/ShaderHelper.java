@@ -56,7 +56,7 @@ public class ShaderHelper {
                 .getShaderGroup()
                 .listShaders
                 .stream()
-                .map(Shader::func_217624_b) // get underlying ShaderInstances
+                .map(Shader::getShaderManager) // get underlying ShaderInstances
                 .forEach(shaderInstance -> applyUniformsToInstance(shaderInstance, event.getPartialTicks()));
     }
 
@@ -90,8 +90,8 @@ public class ShaderHelper {
         val camY = MathHelper.lerp(partialTicks, cameraEntity.lastTickPosY, cameraEntity.posY);
         val camZ = MathHelper.lerp(partialTicks, cameraEntity.lastTickPosZ, cameraEntity.posZ);
 
-        shaderInstance.func_216538_b(CAMERA_POSITION_UNIFORM_NAME).set((float) camX, (float) camY, (float) camZ);
-        shaderInstance.func_216538_b(CAMERA_ROTATION_UNIFORM_NAME).set(cameraEntity.rotationPitch, cameraEntity.rotationYaw);
+        shaderInstance.getShaderUniform(CAMERA_POSITION_UNIFORM_NAME).set((float) camX, (float) camY, (float) camZ);
+        shaderInstance.getShaderUniform(CAMERA_ROTATION_UNIFORM_NAME).set(cameraEntity.rotationPitch, cameraEntity.rotationYaw);
 
     }
 
