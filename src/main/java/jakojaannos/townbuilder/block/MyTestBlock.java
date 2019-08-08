@@ -15,10 +15,38 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.world.World;
 
-import java.util.Random;
-
 @Log4j2
 public class MyTestBlock extends Block {
+
+    private static final String[][] STRUCTURE_TEST = new String[][]{
+            new String[]{
+                    "   ",
+                    " x ",
+                    "   ",
+                    " x ",
+                    "   "},
+
+            new String[]{
+                    " x ",
+                    "x x",
+                    " x ",
+                    "x x",
+                    " x "},
+
+            new String[]{
+                    "x x",
+                    "x x",
+                    "x x",
+                    "x x",
+                    "x x"},
+
+            new String[]{
+                    "xxx",
+                    "x x",
+                    "xxx",
+                    "x x",
+                    "xxx"}
+    };
 
     public MyTestBlock(Properties p_i48440_1_) {
         super(p_i48440_1_);
@@ -41,68 +69,18 @@ public class MyTestBlock extends Block {
         if (Direction.Plane.HORIZONTAL.test(rayTraceResult.getFace())) {
             Direction playerDir = rayTraceResult.getFace().getOpposite();
 
+            int w = STRUCTURE_TEST[0][0].length(),
+                    h = STRUCTURE_TEST.length,
+                    l = STRUCTURE_TEST[0].length;
 
-            Item item = player.getHeldItem(Hand.MAIN_HAND).getItem();
+            LOGGER.info("Width: {}, height: {}, length: {}", w, h, l);
 
-
-            LOGGER.info("Player is holding {}", item.toString());
-
-
-            int width = 1, height = 2, length = 3;
-
-            if (item.equals(Items.COBBLESTONE)) {
-                // some random test values
-                width = 7;
-                height = 3;
-                length = 4;
-
-            } else if (item.equals(Items.STONE)) {
-                // make it a cube
-                width = 4;
-                height = 4;
-                length = 4;
-
-            } else if (item.equals(Items.OBSIDIAN)) {
-                // 6x1x1
-                width = 6;
-                height = 1;
-                length = 1;
-
-            } else if (item.equals(Items.DIAMOND)) {
-                // test what happens with 6x0x0
-                width = 6;
-                height = 0;
-                length = 0;
-
-            } else if (item.equals(Items.IRON_INGOT)) {
-                // same as obsidian, but length instead of width
-                width = 1;
-                height = 1;
-                length = 6;
-
-            } else if (item.equals(Items.GOLD_INGOT)) {
-                // try what happens if all are 0
-                width = 0;
-                height = 0;
-                length = 0;
-
-            } else if (item.equals(Items.EGG)) {
-                // try with all 1
-                width = 1;
-                height = 1;
-                length = 1;
-            } else if (item.equals(Items.BOOK)) {
-                // try with negative values to
-                width = 7;
-                height = -3;
-                length = -4;
-            }
+            var edges = getEdgeBlocks(blockPos, playerDir, w, h, l);
 
 
-            var tpl = getEdgeBlocks(blockPos, playerDir, width, height, length);
+            BlockPos.getAllInBox(edges.getA(), edges.getB())
+                    .forEach(e -> world.setBlockState(e, Blocks.IRON_BLOCK.getDefaultState()));
 
-            world.setBlockState(tpl.getA(), Blocks.COBBLESTONE.getDefaultState());
-            world.setBlockState(tpl.getB(), Blocks.STONE.getDefaultState());
 
         }
 
@@ -174,6 +152,71 @@ public class MyTestBlock extends Block {
     @Override
     public boolean ticksRandomly(BlockState p_149653_1_) {
         return false;
+    }
+
+
+    private static void testEdgeBlocks(BlockPos blockPos, PlayerEntity player, Direction playerDir, World world) {
+        Item item = player.getHeldItem(Hand.MAIN_HAND).getItem();
+
+
+        LOGGER.info("Player is holding {}", item.toString());
+
+
+        int width = 1, height = 2, length = 3;
+
+        if (item.equals(Items.COBBLESTONE)) {
+            // some random test values
+            width = 7;
+            height = 3;
+            length = 4;
+
+        } else if (item.equals(Items.STONE)) {
+            // make it a cube
+            width = 4;
+            height = 4;
+            length = 4;
+
+        } else if (item.equals(Items.OBSIDIAN)) {
+            // 6x1x1
+            width = 6;
+            height = 1;
+            length = 1;
+
+        } else if (item.equals(Items.DIAMOND)) {
+            // test what happens with 6x0x0
+            width = 6;
+            height = 0;
+            length = 0;
+
+        } else if (item.equals(Items.IRON_INGOT)) {
+            // same as obsidian, but length instead of width
+            width = 1;
+            height = 1;
+            length = 6;
+
+        } else if (item.equals(Items.GOLD_INGOT)) {
+            // try what happens if all are 0
+            width = 0;
+            height = 0;
+            length = 0;
+
+        } else if (item.equals(Items.EGG)) {
+            // try with all 1
+            width = 1;
+            height = 1;
+            length = 1;
+        } else if (item.equals(Items.BOOK)) {
+            // try with negative values to
+            width = 7;
+            height = -3;
+            length = -4;
+        }
+
+
+        var tpl = getEdgeBlocks(blockPos, playerDir, width, height, length);
+
+        world.setBlockState(tpl.getA(), Blocks.COBBLESTONE.getDefaultState());
+        world.setBlockState(tpl.getB(), Blocks.STONE.getDefaultState());
     }
 
 
