@@ -2,14 +2,21 @@ package jakojaannos.townbuilder.block;
 
 import lombok.Getter;
 import lombok.var;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 // TODO: move this to some other package
+// change String[][] layers to BlockState[][][]
+// create factory (public static SB fromString(...))
+// when creating blueprint, replace "missing" blocks with air
+// possible to add center of origin
 public class StructureBlueprint {
 
+    /*
     public static void main(String[] args) {
         System.out.println("Testing StructureBlueprint class\n");
 
@@ -56,10 +63,12 @@ public class StructureBlueprint {
 
         System.out.println("\nDone");
     }
+    */
 
-    //public static final StructureBlueprint TEST_BP;
 
-    private static StructureBlueprint createTestBp() {
+    public static final StructureBlueprint TEST_BP = createTestBp();
+
+    public static StructureBlueprint createTestBp() {
         String[][] lrs = new String[][]{
                 new String[]{
                         "      ",
@@ -114,20 +123,20 @@ public class StructureBlueprint {
         StructureBlueprint bp = new StructureBlueprint(lrs);
 
 
-        bp.setKey('C', "Cobblestone");
+        /*bp.setKey('C', "Cobblestone");
         bp.setKey('P', "Planks");
         bp.setKey('G', "Glass");
-        bp.setKey('S', "Stone");
+        bp.setKey('S', "Stone");*/
 
-        /*bp.setKey('C', Blocks.COBBLESTONE.getDefaultState());
+        bp.setKey('C', Blocks.COBBLESTONE.getDefaultState());
         bp.setKey('P', Blocks.OAK_PLANKS.getDefaultState());
         bp.setKey('G', Blocks.GLASS.getDefaultState());
-        bp.setKey('S', Blocks.STONE.getDefaultState());*/
+        bp.setKey('S', Blocks.STONE.getDefaultState());
 
         return bp;
     }
 
-    private static StructureBlueprint createTestBp2() {
+    public static StructureBlueprint createTestBp2() {
         String[][] lrs = new String[][]{
                 new String[]{
                         "      SSS      ",
@@ -143,18 +152,67 @@ public class StructureBlueprint {
         StructureBlueprint bp = new StructureBlueprint(lrs);
 
 
-        bp.setKey('C', "Cobblestone");
+        /*bp.setKey('C', "Cobblestone");
         bp.setKey('P', "Planks");
         bp.setKey('G', "Glass");
-        bp.setKey('S', "Stone");
+        bp.setKey('S', "Stone");*/
+
+
+        bp.setKey('C', Blocks.COBBLESTONE.getDefaultState());
+        bp.setKey('P', Blocks.OAK_PLANKS.getDefaultState());
+        bp.setKey('G', Blocks.GLASS.getDefaultState());
+        bp.setKey('S', Blocks.STONE.getDefaultState());
+
+
+        return bp;
+    }
+
+    public static StructureBlueprint createCobbleHouse() {
+
+        String wall_seg = "C       C";
+        String[] floor = new String[]{
+                "CCCCCCCCC", "CCCCCCCCC", "CCCCCCCCC",
+                "CCCCCCCCC", "CCCCCCCCC", "CCCCCCCCC",
+                "CCCCCCCCC", "CCCCCCCCC", "CCCCCCCCC",
+        };
+
+        String[] walls_1 = new String[]{
+                "CCCCCCCCC", wall_seg, wall_seg,
+                wall_seg, "G       G", wall_seg,
+                wall_seg, wall_seg, "CCCC CCCC"
+        };
+        String[] walls_2 = new String[]{
+                "CCCCCCCCC",
+                wall_seg,
+                wall_seg,
+                wall_seg,
+                wall_seg,
+                wall_seg,
+                wall_seg,
+                wall_seg, "CCCCCCCCC"
+        };
+
+        String[][] lrs = new String[][]{
+                floor,
+                walls_2,
+                walls_1,
+                walls_1,
+                floor
+        };
+        StructureBlueprint bp = new StructureBlueprint(lrs);
+
+
+        bp.setKey('C', Blocks.COBBLESTONE.getDefaultState());
+        bp.setKey('G', Blocks.GLASS.getDefaultState());
+
 
         return bp;
     }
 
 
     private String[][] layers;
-    //private Map<Character, BlockState> keys;
-    private Map<Character, String> keys;
+    private Map<Character, BlockState> keys;
+    //private Map<Character, String> keys;
 
     @Getter
     private final int width, height, length;
@@ -165,8 +223,8 @@ public class StructureBlueprint {
         this.layers = layers;
         this.keys = new HashMap<>();
 
-        //setKey(' ', Blocks.AIR.getDefaultState());
-        setKey(' ', "Air");
+        setKey(' ', Blocks.AIR.getDefaultState());
+        //setKey(' ', "Air");
 
 
         // layers explained
@@ -212,7 +270,9 @@ public class StructureBlueprint {
     }
 
 
-    // this method won't do any bound checking, do that yourself!
+    /**
+     * this method won't do any bound checking, do that yourself!
+     */
     private char getCharAt(int x, int y, int z) {
         // if you want to change coordinate system of this class, do stuff here
 
@@ -221,12 +281,12 @@ public class StructureBlueprint {
     }
 
 
-    public void setKey(char key, String state) {
+    public void setKey(char key, BlockState state) {
         keys.put(key, state);
     }
 
 
-    public Optional<String> getBlockAt(int x, int y, int z) {
+    public Optional<BlockState> getBlockAt(int x, int y, int z) {
         // bound-check
         if (x < 0 || y < 0 || z < 0) return Optional.empty();
         if (x >= width || y >= height || z >= length) return Optional.empty();
@@ -237,12 +297,12 @@ public class StructureBlueprint {
     }
 
 
-    public String[][][] getBlocksInCube(int x1, int y1, int z1, int x2, int y2, int z2) {
+    public BlockState[][][] getBlocksInCube(int x1, int y1, int z1, int x2, int y2, int z2) {
         if (Math.min(x1, x2) < 0 || Math.min(y1, y2) < 0 || Math.min(z1, z2) < 0 || //
                 Math.max(x1, x2) > width || Math.max(y1, y2) > height || Math.max(z1, z2) > length) {
             // one of the arguments is less than 0 or out of bounds, throw an error?
 
-            return new String[0][0][0];
+            return new BlockState[0][0][0];
         }
 
 
@@ -252,7 +312,7 @@ public class StructureBlueprint {
                 cl = Math.abs(z1 - z2) + 1;
 
 
-        String[][][] result = new String[ch][cl][cw];
+        BlockState[][][] result = new BlockState[ch][cl][cw];
 
 
         for (int xx = 0; xx < cw; xx++) {
@@ -266,8 +326,8 @@ public class StructureBlueprint {
 
                     char c = getCharAt(xc, yc, zc);
                     // if key was not found, do we throw an error or change the missing block to air?
-                    //BlockState bs = keys.getOrDefault(c, Blocks.AIR.getDefaultState());
-                    String bs = keys.getOrDefault(c, "Air");
+                    BlockState bs = keys.getOrDefault(c, Blocks.AIR.getDefaultState());
+                    //String bs = keys.getOrDefault(c, "Air");
 
                     result[yy][zz][xx] = bs;
                 }
@@ -278,7 +338,7 @@ public class StructureBlueprint {
     }
 
 
-    public String[][][] getBlocks() {
+    public BlockState[][][] getBlocks() {
         return getBlocksInCube(0, 0, 0, width - 1, height - 1, length - 1);
     }
 

@@ -18,35 +18,8 @@ import net.minecraft.world.World;
 @Log4j2
 public class MyTestBlock extends Block {
 
-    private static final String[][] STRUCTURE_TEST = new String[][]{
-            new String[]{
-                    "   ",
-                    " x ",
-                    "   ",
-                    " x ",
-                    "   "},
+    private static StructureBlueprint bp = StructureBlueprint.createCobbleHouse();
 
-            new String[]{
-                    " x ",
-                    "x x",
-                    " x ",
-                    "x x",
-                    " x "},
-
-            new String[]{
-                    "x x",
-                    "x x",
-                    "x x",
-                    "x x",
-                    "x x"},
-
-            new String[]{
-                    "xxx",
-                    "x x",
-                    "xxx",
-                    "x x",
-                    "xxx"}
-    };
 
     public MyTestBlock(Properties p_i48440_1_) {
         super(p_i48440_1_);
@@ -69,17 +42,53 @@ public class MyTestBlock extends Block {
         if (Direction.Plane.HORIZONTAL.test(rayTraceResult.getFace())) {
             Direction playerDir = rayTraceResult.getFace().getOpposite();
 
-            int w = STRUCTURE_TEST[0][0].length(),
-                    h = STRUCTURE_TEST.length,
-                    l = STRUCTURE_TEST[0].length;
+            LOGGER.info("Let's build stuff!");
+            var blocks = bp.getBlocks();
 
-            LOGGER.info("Width: {}, height: {}, length: {}", w, h, l);
+            var pFacingPos = blockPos
+                    .offset(playerDir, bp.getLength())
+                    .offset(playerDir.rotateY(), -bp.getWidth() / 2);
+            var pos = new BlockPos.MutableBlockPos(blockPos);
 
-            var edges = getEdgeBlocks(blockPos, playerDir, w, h, l);
+            //Mirror mirror = getMirror();
+            //ERotation rotation = getRotation(player);
+            ERotation rotation;
 
+            switch (playerDir) {
+                case NORTH:
+                    rotation = ERotation.NONE;
+                    break;
+                case EAST:
+                    rotation = ERotation.COUNTERCLOCKWISE_90;
+                    break;
+                case SOUTH:
+                    rotation = ERotation.CLOCKWISE_180;
+                    break;
+                case WEST:
+                default:
+                    rotation = ERotation.CLOCKWISE_90;
+                    break;
 
-            BlockPos.getAllInBox(edges.getA(), edges.getB())
-                    .forEach(e -> world.setBlockState(e, Blocks.IRON_BLOCK.getDefaultState()));
+            }
+
+            boolean first = true;
+
+            for (int y = 0; y < blocks.length; y++) {
+                for (int z = 0; z < blocks[y].length; z++) {
+                    for (int x = 0; x < blocks[y][z].length; x++) {
+                        pos.setPos(x, y, z);
+
+                        getTransformedPos(pos, EMirror.NONE, rotation, pFacingPos);
+
+                        if (first) {
+                            LOGGER.info("Start pos: ({},{},{})", pos.getX(), pos.getY(), pos.getZ());
+                            first = false;
+                        }
+
+                        world.setBlockState(pos, blocks[y][z][x]);
+                    }
+                }
+            }
 
 
         }
@@ -89,11 +98,11 @@ public class MyTestBlock extends Block {
     }
 
     /**
-     * Returns two edge blocks of a cube. One is in bottom-left-frontside corner (next to MyTestBlock),
-     * and the other one is in top-right-backside corner.
+     * Returns two edge blocks of a cube. One is in bottom-left-frontside corner (next to MyTestBlock), and the other
+     * one is in top-right-backside corner.
      * <p>
-     * The resulting cube does not overlap the given MyTestBlock's position as the bottom-left-front block is
-     * offset by 1 block from the given origin position.
+     * The resulting cube does not overlap the given MyTestBlock's position as the bottom-left-front block is offset by
+     * 1 block from the given origin position.
      *
      * @param blockPos  position of the MyTestBlock
      * @param playerDir which direction the player is facing (opposite of the side the block was clicked on)
@@ -124,6 +133,17 @@ public class MyTestBlock extends Block {
 
 
     // TODO: finish later
+
+    /**
+     * NOT YET IMPLEMENTED
+     *
+     * @param blockPos
+     * @param playerDir
+     * @param width
+     * @param height
+     * @param length
+     * @return
+     */
     private static Tuple<BlockPos, BlockPos> getEdgeBlocksCentered(
             BlockPos blockPos,
             Direction playerDir,
@@ -152,6 +172,31 @@ public class MyTestBlock extends Block {
     @Override
     public boolean ticksRandomly(BlockState p_149653_1_) {
         return false;
+    }
+
+
+    /**
+     * used for testing
+     */
+    private static EMirror getMirror(PlayerEntity player) {
+        Item item = player.getHeldItem(Hand.MAIN_HAND).getItem();
+
+        if (item.equals(Items.COBBLESTONE)) return EMirror.Z_AXIS;
+        if (item.equals(Items.STONE)) return EMirror.X_AXIS;
+        if (item.equals(Items.OBSIDIAN)) return EMirror.XZ_AXIS;
+        return EMirror.NONE;
+    }
+
+    /**
+     * used for testing
+     */
+    private static ERotation getRotation(PlayerEntity player) {
+        Item item = player.getHeldItem(Hand.MAIN_HAND).getItem();
+
+        if (item.equals(Items.COBBLESTONE)) return ERotation.CLOCKWISE_90;
+        if (item.equals(Items.STONE)) return ERotation.COUNTERCLOCKWISE_90;
+        if (item.equals(Items.OBSIDIAN)) return ERotation.CLOCKWISE_180;
+        return ERotation.NONE;
     }
 
 
@@ -217,6 +262,52 @@ public class MyTestBlock extends Block {
 
         world.setBlockState(tpl.getA(), Blocks.COBBLESTONE.getDefaultState());
         world.setBlockState(tpl.getB(), Blocks.STONE.getDefaultState());
+    }
+
+
+    public static BlockPos.MutableBlockPos getTransformedPos(
+            BlockPos.MutableBlockPos targetPos,
+            EMirror mirrorIn,
+            ERotation rotationIn,
+            BlockPos offset
+    ) {
+        int x = targetPos.getX();
+        int y = targetPos.getY();
+        int z = targetPos.getZ();
+
+        switch (mirrorIn) {
+            case Z_AXIS:
+                targetPos.setPos(-x, y, z);
+                break;
+            case X_AXIS:
+                targetPos.setPos(x, y, -z);
+                break;
+            case XZ_AXIS:
+                targetPos.setPos(-x, y, -z);
+                break;
+        }
+
+        x = targetPos.getX();
+        y = targetPos.getY();
+        z = targetPos.getZ();
+
+
+        switch (rotationIn) {
+            case CLOCKWISE_90:
+                targetPos.setPos(z, y, -x);
+                break;
+            case CLOCKWISE_180:
+                targetPos.setPos(-x, y, -z);
+                break;
+            case COUNTERCLOCKWISE_90:
+                targetPos.setPos(-z, y, x);
+                break;
+
+        }
+
+        targetPos.move(offset.getX(), offset.getY(), offset.getZ());
+
+        return targetPos;
     }
 
 
