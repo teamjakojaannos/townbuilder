@@ -2,6 +2,7 @@ package jakojaannos.townbuilder;
 
 import jakojaannos.townbuilder.block.EMirror;
 import jakojaannos.townbuilder.block.ERotation;
+import jakojaannos.townbuilder.block.MyTestBlock;
 import lombok.extern.log4j.Log4j2;
 import lombok.var;
 import net.minecraft.util.math.BlockPos;
@@ -129,7 +130,7 @@ public class TestLauncher {
             ERotation rotationIn,
             BlockPos offset, BlockPos.MutableBlockPos expected
     ) {
-        var result = getTransformedPos(targetPos, mirrorIn, rotationIn, offset);
+        var result = MyTestBlock.getTransformedPos(targetPos, mirrorIn, rotationIn, offset);
 
         if (result.equals(expected)) {
             LOGGER.info("Case #{}: OK!", testId++);
@@ -141,53 +142,4 @@ public class TestLauncher {
 
 
     }
-
-
-    // TODO: Y-axis mirror, Y-axis rotation
-    public static BlockPos.MutableBlockPos getTransformedPos(
-            BlockPos.MutableBlockPos targetPos,
-            EMirror mirrorIn,
-            ERotation rotationIn,
-            BlockPos offset
-    ) {
-        int x = targetPos.getX();
-        int y = targetPos.getY();
-        int z = targetPos.getZ();
-
-        switch (mirrorIn) {
-            case Z_AXIS:
-                targetPos.setPos(-x, y, z);
-                break;
-            case X_AXIS:
-                targetPos.setPos(x, y, -z);
-                break;
-            case XZ_AXIS:
-                targetPos.setPos(-x, y, -z);
-                break;
-        }
-
-        x = targetPos.getX();
-        y = targetPos.getY();
-        z = targetPos.getZ();
-
-
-        switch (rotationIn) {
-            case CLOCKWISE_90:
-                targetPos.setPos(z, y, -x);
-                break;
-            case CLOCKWISE_180:
-                targetPos.setPos(-x, y, -z);
-                break;
-            case COUNTERCLOCKWISE_90:
-                targetPos.setPos(-z, y, x);
-                break;
-
-        }
-
-        targetPos.move(offset.getX(), offset.getY(), offset.getZ());
-
-        return targetPos;
-    }
-
-
 }
